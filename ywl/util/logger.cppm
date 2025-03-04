@@ -77,9 +77,9 @@ namespace ywl::util {
     };
 
     export class logger_builder {
-        std::ostream *osp;
-        std::string source;
-        std::string level;
+        std::ostream *osp{&std::cout};
+        std::string source{"main"};
+        std::string level{"INFO"};
 
     public:
         logger_builder() = default;
