@@ -14,30 +14,30 @@ namespace ywl::util {
         bool is_enabled;
 
     public:
-        logger() = delete;
+        constexpr logger() = delete;
 
-        logger(const logger &) = delete;
+        constexpr logger(const logger &) = delete;
 
-        logger(logger &&) = delete;
+        constexpr logger(logger &&) = delete;
 
-        logger &operator=(const logger &) = delete;
+        constexpr logger &operator=(const logger &) = delete;
 
-        logger &operator=(logger &&) = delete;
+        constexpr logger &operator=(logger &&) = delete;
 
-        logger(std::ostream *osp, std::string source, std::string level, bool is_enabled) : osp{osp},
+        constexpr logger(std::ostream *osp, std::string source, std::string level, bool is_enabled) : osp{osp},
             source{std::move(source)}, level{std::move(level)}, is_enabled{is_enabled} {}
 
-        logger &set_enabled(this logger &self, bool enabled) {
+        constexpr logger &set_enabled(this logger &self, bool enabled) {
             self.is_enabled = enabled;
             return self;
         }
 
-        logger &flush(this logger &self) {
+        constexpr logger &flush(this logger &self) {
             self.osp->flush();
             return self;
         }
 
-        const logger &flush(this const logger &self) {
+        constexpr const logger &flush(this const logger &self) {
             self.osp->flush();
             return self;
         }
@@ -82,24 +82,24 @@ namespace ywl::util {
         std::string level{"INFO"};
 
     public:
-        logger_builder() = default;
+        constexpr logger_builder() = default;
 
-        decltype(auto) set_os(this auto &&self, std::ostream &os) {
+        constexpr decltype(auto) set_os(this auto &&self, std::ostream &os) {
             self.osp = &os;
             return self;
         }
 
-        decltype(auto) set_source(this auto &&self, std::string source) {
+        constexpr decltype(auto) set_source(this auto &&self, std::string source) {
             self.source = std::move(source);
             return self;
         }
 
-        decltype(auto) set_level(this auto &&self, std::string level) {
+        constexpr decltype(auto) set_level(this auto &&self, std::string level) {
             self.level = std::move(level);
             return self;
         }
 
-        logger build(this auto &&self) {
+        constexpr logger build(this auto &&self) {
             return logger{
                 self.osp, std::forward<decltype(self.source)>(self.source),
                 std::forward<decltype(self.level)>(self.level), true
@@ -107,6 +107,6 @@ namespace ywl::util {
         }
     };
 
-    export inline auto default_logger = logger_builder{}.build();
-    export inline auto default_error_logger = logger_builder{}.set_os(std::cerr).set_level("ERROR").build();
+    export const inline auto default_logger = logger_builder{}.build();
+    export const inline auto default_error_logger = logger_builder{}.set_os(std::cerr).set_level("ERROR").build();
 }
