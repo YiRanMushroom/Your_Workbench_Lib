@@ -107,7 +107,6 @@ namespace ywl::util {
         }
     };
 
-
     export inline auto default_logger = logger_builder{}.build();
     export inline auto default_error_logger = logger_builder{}.set_os(std::cerr).set_level("ERROR").build();
 }
