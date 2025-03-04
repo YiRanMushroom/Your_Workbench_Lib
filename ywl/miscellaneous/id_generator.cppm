@@ -11,8 +11,6 @@ namespace ywl::miscellaneous {
         T current_id{};
         std::vector<T> freed_ids{};
 
-        // const static inline T default_value{};
-
     public:
         using value_type = T;
 

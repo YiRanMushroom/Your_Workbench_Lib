@@ -6,154 +6,104 @@ module;
 export module ywl.util.logger;
 
 namespace ywl::util {
-    export class logger_info_t {
-    public:
-        constexpr static const char *source() {
-            return "LOGGER";
-        }
-
-        constexpr static const char *level() {
-            return "INFO";
-        }
-
-        constexpr static bool use_std_err() {
-            return false;
-        }
-
-        constexpr static bool is_always_disabled() {
-            return false;
-        }
-    };
-
-    export inline logger_info_t default_logger_info{};
-
-    template<typename T>
-    concept is_logger_info = std::is_base_of_v<logger_info_t, T> || requires(T) {
-        { T::source() } -> std::convertible_to<const char *>;
-        { T::level() } -> std::convertible_to<const char *>;
-        { T::use_std_err() } -> std::convertible_to<bool>;
-        { T::is_always_disabled() } -> std::convertible_to<bool>;
-    };
-
-    export template<is_logger_info Info>
-    class logger_t {
-    public:
-        logger_t() = default;
-
+    export class logger {
     private:
-        static inline bool is_enabled{true};
-
-        static inline bool do_flush{true};
+        std::ostream *osp;
+        std::string source;
+        std::string level;
+        bool is_enabled;
 
     public:
-        constexpr static void enable() {
-            is_enabled = true;
+        logger() = delete;
+
+        logger(const logger &) = delete;
+
+        logger(logger &&) = delete;
+
+        logger &operator=(const logger &) = delete;
+
+        logger &operator=(logger &&) = delete;
+
+        logger(std::ostream *osp, std::string source, std::string level, bool is_enabled) : osp{osp},
+            source{std::move(source)}, level{std::move(level)}, is_enabled{is_enabled} {}
+
+        logger &set_enabled(this logger &self, bool enabled) {
+            self.is_enabled = enabled;
+            return self;
         }
 
-        constexpr static void disable() {
-            is_enabled = false;
+        logger &flush(this logger &self) {
+            self.osp->flush();
+            return self;
         }
 
-        constexpr static void enable_flush() {
-            do_flush = true;
+        const logger &flush(this const logger &self) {
+            self.osp->flush();
+            return self;
         }
 
-        constexpr static void disable_flush() {
-            do_flush = false;
+
+        template<typename... Tps>
+        constexpr decltype(auto) log_fmt(this auto &&self, std::format_string<const Tps &...> fmt,
+                                         const Tps &... args) {
+            if (self.is_enabled) {
+                *(self.osp) << std::format("[{}: {}] ", self.source, self.level) << std::format(fmt, args...) << '\n';
+            }
+
+            return self;
         }
 
         template<typename... Tps>
-        constexpr void operator()(std::format_string<const Tps &...> fmt, const Tps &... args) const {
-            if (is_enabled) {
-                if constexpr (Info::use_std_err()) {
-                    std::cerr << std::format("[{}: {}] ", Info::source(), Info::level())
-                            << std::format(fmt, args...) << '\n';
-                } else {
-                    std::cout << std::format("[{}: {}] ", Info::source(), Info::level())
-                            << std::format(fmt, args...) << '\n';
-                    if (do_flush)
-                        std::cout.flush();
-                }
-            }
+        constexpr decltype(auto) operator()(this auto &&self, std::format_string<const Tps &...> fmt,
+                                            const Tps &... args) {
+            return self.log_fmt(fmt, args...);
         }
 
         template<typename... Tps>
-        constexpr void log_fmt_multiple(std::format_string<const Tps &...> fmt, const Tps &... args) const {
-            if (is_enabled) {
-                if constexpr (Info::use_std_err()) {
-                    std::cerr << std::format("===========[{}: {}]===========\n", Info::source(), Info::level())
-                            << std::format(fmt, args...) << '\n';
-                    std::cerr << std::format(fmt, args...) << '\n';
-                    std::cerr << std::format("===========[ E N D ]===========\n", Info::source(), Info::level())
-                            << std::format(fmt, args...) << '\n';
-                } else {
-                    std::cout << std::format("===========[{}: {}]===========\n", Info::source(), Info::level())
-                            << std::format(fmt, args...) << '\n';
-                    std::cout << std::format(fmt, args...) << '\n';
-                    std::cout << std::format("===========[ E N D ]===========\n", Info::source(), Info::level())
-                            << std::format(fmt, args...) << '\n';
-                    if (do_flush)
-                        std::cout.flush();
-                }
+        constexpr decltype(auto) log_no_fmt(this auto &&self, const Tps &... args) {
+            if (self.is_enabled) {
+                *(self.osp) << std::format("[{}: {}] ", self.source, self.level);
+                ((*(self.osp) << std::format("{}", args) << ' '), ...);
+                *(self.osp) << '\n';
             }
-        }
 
-        template<typename... Ts>
-        constexpr void operator[](const Ts &... args) const {
-            if (is_enabled) {
-                if constexpr (Info::use_std_err()) {
-                    std::cerr << std::format("[{}: {}] ", Info::source(), Info::level());
-                    ((std::cerr << std::format("{}", args) << ' '), ...);
-                    std::cerr << '\n';
-                } else {
-                    std::cout << std::format("[{}: {}] ", Info::source(), Info::level());
-                    ((std::cout << std::format("{}", args) << ' '), ...);
-                    std::cout << '\n';
-                    if (do_flush)
-                        std::cout.flush();
-                }
-            }
+            return self;
         }
 
         template<typename... Tps>
-        constexpr void log_fmt(std::format_string<const Tps &...> fmt, const Tps &... args) const {
-            return logger_t<Info>::operator()(fmt, args...);
-        }
-
-        template<typename... Ts>
-        constexpr void log(const Ts &... args) const {
-            return logger_t<Info>::operator[](args...);
+        constexpr decltype(auto) operator[](this auto &&self, const Tps &... args) {
+            return self.log_no_fmt(args...);
         }
     };
 
-    class logger_dispatcher_t {
+    export class logger_builder {
+        std::ostream *osp;
+        std::string source;
+        std::string level;
+
     public:
-        logger_dispatcher_t() = default;
+        logger_builder() = default;
 
-        template<is_logger_info Info>
-        decltype(auto) operator[](Info) {
-            if constexpr (Info::is_always_disabled()) {
-                return [](const auto &&...) {};
-            } else {
-                return logger_t<Info>{};
-            }
+        decltype(auto) set_os(this auto &&self, std::ostream &os) {
+            self.osp = &os;
+            return self;
+        }
+
+        decltype(auto) set_source(this auto &&self, std::string source) {
+            self.source = std::move(source);
+            return self;
+        }
+
+        decltype(auto) set_level(this auto &&self, std::string level) {
+            self.level = std::move(level);
+            return self;
+        }
+
+        logger build(this auto &&self) {
+            return logger{
+                self.osp, std::forward<decltype(self.source)>(self.source),
+                std::forward<decltype(self.level)>(self.level), true
+            };
         }
     };
-
-    export inline logger_dispatcher_t logger{};
-
-    export inline auto default_logger = logger[default_logger_info];
-
-    class default_logger_info_error_t : public logger_info_t {
-    public:
-        constexpr static const char *level() {
-            return "ERROR";
-        }
-
-        constexpr static bool use_std_err() {
-            return true;
-        }
-    };
-
-    export inline auto default_error_logger = logger[default_logger_info_error_t{}];
 }

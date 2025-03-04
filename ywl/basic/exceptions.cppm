@@ -9,6 +9,8 @@ module;
 
 export module ywl.basic.exceptions;
 
+import ywl.basic.string_literal;
+
 namespace ywl::basic {
     export class ywl_exception_base : public std::exception {
         std::string message;
@@ -24,8 +26,7 @@ namespace ywl::basic {
                                     std::source_location location = std::source_location::current(),
                                     std::stacktrace stacktrace = std::stacktrace::current())
             noexcept : message{std::move(message)}, location{std::move(location)},
-                       stacktrace{std::move(stacktrace)} {
-        } // NOLINT
+                       stacktrace{std::move(stacktrace)} {} // NOLINT
 
         [[nodiscard]] virtual const char *exception_reminder() const noexcept {
             return "ywl_exception_base";
@@ -64,8 +65,7 @@ namespace ywl::basic {
 
         ywl_impl_error(std::string message, std::source_location location = std::source_location::current(),
                        std::stacktrace stacktrace = std::stacktrace::current())
-            noexcept : ywl_exception_base{std::move(message), std::move(location), std::move(stacktrace)} {
-        }
+            noexcept : ywl_exception_base{std::move(message), std::move(location), std::move(stacktrace)} {}
 
         ywl_impl_error(const ywl_impl_error &) = default;
 
@@ -76,7 +76,32 @@ namespace ywl::basic {
         ywl_impl_error &operator=(ywl_impl_error &&) noexcept = default;
 
         [[nodiscard]] const char *exception_reminder() const noexcept override {
-            return "error in ywl implementation";
+            return "ywl_impl_error";
         }
     };
+
+    export template<ywl::basic::string_literal reminder = "RUNTIME ERROR">
+    class runtime_error : public ywl_exception_base {
+    public:
+        runtime_error() noexcept = delete;
+
+        runtime_error(std::string message, std::source_location location = std::source_location::current(),
+                      std::stacktrace stacktrace = std::stacktrace::current())
+            noexcept : ywl_exception_base{std::move(message), std::move(location), std::move(stacktrace)} {}
+
+        runtime_error(const runtime_error &) = default;
+
+        runtime_error(runtime_error &&) noexcept = default;
+
+        runtime_error &operator=(const runtime_error &) = default;
+
+        runtime_error &operator=(runtime_error &&) noexcept = default;
+
+        [[nodiscard]] const char *exception_reminder() const noexcept override {
+            return reminder.data;
+        }
+    };
+
+    export template<ywl::basic::string_literal reminder = "LOGIC ERROR">
+    using logic_error = runtime_error<reminder>;
 }
