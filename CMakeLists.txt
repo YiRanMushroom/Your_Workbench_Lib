@@ -20,6 +20,12 @@ target_sources(${PROJECT_NAME}
         FILES ${MODULES}
 )
 
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+            MSVC_RUNTIME_LIBRARY ${CMAKE_MSVC_RUNTIME_LIBRARY})
+endif()
+
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
@@ -49,5 +55,6 @@ install(FILES
 
 install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
+        NAMESPACE ${PROJECT_NAME}::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
