@@ -193,9 +193,9 @@ namespace ywl::miscellaneous {
         }
 
         static void write_to(const std::string &val, std::vector<unsigned char> &container) {
-            buffer_impl_t<size_t>::write_to(val.size(), container);
             container.resize(container.size() + val.size());
             std::memcpy(container.data() + container.size() - val.size(), val.data(), val.size());
+            buffer_impl_t<size_t>::write_to(val.size(), container);
         }
     };
 }
