@@ -108,34 +108,6 @@ namespace ywl::miscellaneous {
         }
     };
 
-    export template<bufferable T, template<typename> typename Container>
-        requires requires(Container<T> container)
-        {
-            { container.size() } -> std::convertible_to<size_t>;
-            { container.push_back(std::declval<T>()) };
-            { container.pop_back() } -> std::same_as<T>;
-        }
-    struct buffer_impl_t<Container<T> > {
-        static Container<T> read_from(std::vector<unsigned char> &container) {
-            size_t size = buffer_impl_t<size_t>::read_from(container);
-            Container<T> val;
-            if constexpr (requires { val.reserve(size); }) {
-                val.reserve(size);
-            }
-            for (size_t i = 0; i < size; ++i) {
-                val.push_back(buffer_impl_t<T>::read_from(container));
-            }
-            return val;
-        }
-
-        static void write_to(const Container<T> &val, std::vector<unsigned char> &container) {
-            for (const auto &item: val) {
-                buffer_impl_t<T>::write_to(item, container);
-            }
-            buffer_impl_t<size_t>::write_to(val.size(), container);
-        }
-    };
-
     export template<bufferable K, bufferable V>
     struct buffer_impl_t<std::unordered_map<K, V> > {
         static std::unordered_map<K, V> read_from(std::vector<unsigned char> &container) {
@@ -175,6 +147,34 @@ namespace ywl::miscellaneous {
             for (const auto &[key, value]: val) {
                 buffer_impl_t<V>::write_to(value, container);
                 buffer_impl_t<K>::write_to(key, container);
+            }
+            buffer_impl_t<size_t>::write_to(val.size(), container);
+        }
+    };
+
+    export template<bufferable T, template<typename...> typename Container>
+        requires requires(Container<T> container)
+        {
+            { container.size() } -> std::convertible_to<size_t>;
+            { container.push_back(std::declval<T>()) };
+            { container.pop_back() } -> std::same_as<T>;
+        }
+    struct buffer_impl_t<Container<T> > {
+        static Container<T> read_from(std::vector<unsigned char> &container) {
+            size_t size = buffer_impl_t<size_t>::read_from(container);
+            Container<T> val;
+            if constexpr (requires { val.reserve(size); }) {
+                val.reserve(size);
+            }
+            for (size_t i = 0; i < size; ++i) {
+                val.push_back(buffer_impl_t<T>::read_from(container));
+            }
+            return val;
+        }
+
+        static void write_to(const Container<T> &val, std::vector<unsigned char> &container) {
+            for (const auto &item: val) {
+                buffer_impl_t<T>::write_to(item, container);
             }
             buffer_impl_t<size_t>::write_to(val.size(), container);
         }
