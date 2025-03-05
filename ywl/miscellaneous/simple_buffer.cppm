@@ -4,6 +4,7 @@ module;
 #include <concepts>
 #include <cstring>
 #include <map>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -67,7 +68,7 @@ namespace ywl::miscellaneous {
             // read_from_back
             assert(container.size() >= sizeof(T));
             T val{val};
-            std::memcpy(&val, container.end() - sizeof(T), sizeof(T));
+            std::memcpy(&val, container.data() + container.size() - sizeof(T), sizeof(T));
             container.resize(container.size() - sizeof(T));
             return val;
         }
@@ -75,7 +76,7 @@ namespace ywl::miscellaneous {
         static void write_to(const T &val, std::vector<unsigned char> &container) {
             // write_to_back
             container.resize(container.size() + sizeof(T));
-            std::memcpy(container.end() - sizeof(T), &val, sizeof(T));
+            std::memcpy(container.data() + container.size() - sizeof(T), &val, sizeof(T));
         }
     };
 
@@ -177,6 +178,24 @@ namespace ywl::miscellaneous {
                 buffer_impl_t<T>::write_to(item, container);
             }
             buffer_impl_t<size_t>::write_to(val.size(), container);
+        }
+    };
+
+    export template<>
+    struct buffer_impl_t<std::string> {
+        static std::string read_from(std::vector<unsigned char> &container) {
+            size_t size = buffer_impl_t<size_t>::read_from(container);
+            std::string val;
+            val.resize(size);
+            std::memcpy(val.data(), container.data() + container.size() - size, size);
+            container.resize(container.size() - size);
+            return val;
+        }
+
+        static void write_to(const std::string &val, std::vector<unsigned char> &container) {
+            buffer_impl_t<size_t>::write_to(val.size(), container);
+            container.resize(container.size() + val.size());
+            std::memcpy(container.data() + container.size() - val.size(), val.data(), val.size());
         }
     };
 }
