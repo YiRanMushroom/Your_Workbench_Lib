@@ -58,6 +58,7 @@ namespace ywl::miscellaneous {
             return self;
         }
 
+
     private:
         std::vector<unsigned char> m_buffer;
     };
