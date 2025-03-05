@@ -109,23 +109,21 @@ namespace ywl::miscellaneous {
         }
     };
 
-    /*export template<bufferable K, bufferable V>
+    export template<bufferable K, bufferable V>
     struct buffer_impl_t<std::unordered_map<K, V> > {
         static std::unordered_map<K, V> read_from(std::vector<unsigned char> &container) {
             std::unordered_map<K, V> val;
             size_t size = buffer_impl_t<size_t>::read_from(container);
             for (size_t i = 0; i < size; ++i) {
-                auto key = buffer_impl_t<K>::read_from(container);
-                auto value = buffer_impl_t<V>::read_from(container);
-                val[std::move(key)] = std::move(value);
+                auto entry = buffer_impl_t<std::pair<K, V> >::read_from(container);
+                val.insert(std::move(entry));
             }
             return val;
         }
 
         static void write_to(const std::unordered_map<K, V> &val, std::vector<unsigned char> &container) {
-            for (const auto &[key, value]: val) {
-                buffer_impl_t<V>::write_to(value, container);
-                buffer_impl_t<K>::write_to(key, container);
+            for (const auto &entry: val) {
+                buffer_impl_t<std::pair<K, V> >::write_to(entry, container);
             }
             buffer_impl_t<size_t>::write_to(val.size(), container);
         }
@@ -151,15 +149,15 @@ namespace ywl::miscellaneous {
             }
             buffer_impl_t<size_t>::write_to(val.size(), container);
         }
-    };*/
+    };
 
     export template<bufferable T, template<typename...> typename Container>
         requires requires(Container<T> container)
         {
             { container.size() } -> std::convertible_to<size_t>;
             { container.push_back(std::declval<T>()) };
-            std::begin(container);
-            std::end(container);
+            std::rbegin(container);
+            std::rend(container);
         }
     struct buffer_impl_t<Container<T> > {
         static Container<T> read_from(std::vector<unsigned char> &container) {
@@ -175,8 +173,8 @@ namespace ywl::miscellaneous {
         }
 
         static void write_to(const Container<T> &val, std::vector<unsigned char> &container) {
-            for (const auto &item: val) {
-                buffer_impl_t<T>::write_to(item, container);
+            for (auto it = std::rbegin(val); it != std::rend(val); ++it) {
+                buffer_impl_t<T>::write_to(*it, container);
             }
             buffer_impl_t<size_t>::write_to(val.size(), container);
         }
