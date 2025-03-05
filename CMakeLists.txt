@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.31)
 
 set(PROJECT_NAME your_workbench_lib)
 
-project(${PROJECT_NAME}
+project(your_workbench_lib
         VERSION 0.1.0
         DESCRIPTION "modular C++ utility library"
         LANGUAGES CXX)
