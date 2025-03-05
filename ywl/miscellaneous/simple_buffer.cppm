@@ -109,7 +109,7 @@ namespace ywl::miscellaneous {
         }
     };
 
-    export template<bufferable K, bufferable V>
+    /*export template<bufferable K, bufferable V>
     struct buffer_impl_t<std::unordered_map<K, V> > {
         static std::unordered_map<K, V> read_from(std::vector<unsigned char> &container) {
             std::unordered_map<K, V> val;
@@ -151,14 +151,15 @@ namespace ywl::miscellaneous {
             }
             buffer_impl_t<size_t>::write_to(val.size(), container);
         }
-    };
+    };*/
 
     export template<bufferable T, template<typename...> typename Container>
         requires requires(Container<T> container)
         {
             { container.size() } -> std::convertible_to<size_t>;
             { container.push_back(std::declval<T>()) };
-            { container.pop_back() } -> std::same_as<T>;
+            std::begin(container);
+            std::end(container);
         }
     struct buffer_impl_t<Container<T> > {
         static Container<T> read_from(std::vector<unsigned char> &container) {
