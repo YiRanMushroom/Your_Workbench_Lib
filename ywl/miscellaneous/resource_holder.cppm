@@ -11,7 +11,8 @@ import ywl.basic.helpers;
 
 namespace ywl::miscellaneous {
     export template<typename T>
-    concept is_unique_resource_holder_hint_type = requires {
+    concept is_unique_resource_holder_hint_type = requires
+    {
         typename T::holder_storage_type;
         typename T::holder_value_type;
         requires std::is_trivial_v<typename T::holder_value_type>;
@@ -45,7 +46,8 @@ namespace ywl::miscellaneous {
 
 
     export template<typename T, typename enable = void>
-    class unique_holder {};
+    class unique_holder {
+    };
 
     export template<typename T>
     class unique_holder<T, std::enable_if_t<is_unique_resource_holder_hint_type<T> > > {
@@ -63,13 +65,16 @@ namespace ywl::miscellaneous {
 
         constexpr unique_holder &operator=(const unique_holder &) = delete;
 
-        constexpr unique_holder(unique_holder &&other) noexcept : storage(T::move_storage(other.storage)) {}
+        constexpr unique_holder(unique_holder &&other) noexcept : storage(T::move_storage(other.storage)) {
+        }
 
         constexpr explicit unique_holder(value_type &&value) : storage(
-            T::create_storage_from_resource(std::move(value))) {}
+            T::create_storage_from_resource(std::move(value))) {
+        }
 
     private:
-        constexpr explicit unique_holder(storage_type &&storage) : storage(T::move_storage(storage)) {}
+        constexpr explicit unique_holder(storage_type &&storage) : storage(T::move_storage(storage)) {
+        }
 
     public:
         constexpr unique_holder &operator=(unique_holder &&other) noexcept {
@@ -118,7 +123,8 @@ namespace ywl::miscellaneous {
     };
 
     template<typename T>
-    concept is_unique_resource_holder_identity_hint_type = requires {
+    concept is_unique_resource_holder_identity_hint_type = requires
+    {
         typename T::value_type;
 
         requires std::is_trivial_v<typename T::value_type>;
@@ -147,9 +153,11 @@ namespace ywl::miscellaneous {
 
         constexpr unique_holder &operator=(const unique_holder &) = delete;
 
-        constexpr unique_holder(unique_holder &&other) noexcept : value(T::move_value(other.value)) {}
+        constexpr unique_holder(unique_holder &&other) noexcept : value(T::move_value(other.value)) {
+        }
 
-        constexpr explicit unique_holder(value_type &&value) : value(T::move_value(value)) {}
+        constexpr explicit unique_holder(value_type &&value) : value(T::move_value(value)) {
+        }
 
     public:
         constexpr unique_holder &operator=(unique_holder &&other) noexcept {
@@ -267,7 +275,8 @@ namespace ywl::miscellaneous {
     };
 
     export template<typename T>
-    concept is_shared_resource_holder_hint_type = requires {
+    concept is_shared_resource_holder_hint_type = requires
+    {
         typename T::holder_value_type;
 
         requires std::is_trivial_v<typename T::holder_value_type>;
@@ -292,7 +301,8 @@ namespace ywl::miscellaneous {
                   weak_count{1},
                   resource{
                       T::create(std::forward<decltype(args)>(args)...)
-                  } {}
+                  } {
+            }
 
         public:
             constexpr shared_resource_control_block() = delete;
@@ -306,10 +316,11 @@ namespace ywl::miscellaneous {
             constexpr shared_resource_control_block &operator=(shared_resource_control_block &&) = delete;
 
             constexpr shared_resource_control_block *provide_shared() {
-                size_t original_strong = strong_count.load(std::memory_order_acquire);
+                size_t original_strong = strong_count.load(std::memory_order_relaxed);
                 while (original_strong > 0) {
-                    if (strong_count.compare_exchange_weak(original_strong, original_strong + 1,
-                                                           std::memory_order_acq_rel)) {
+                    if (strong_count.compare_exchange_weak(original_strong,
+                                                           original_strong + 1,
+                                                           std::memory_order_relaxed)) {
                         return provide_weak();
                     }
                 }
@@ -518,7 +529,8 @@ namespace ywl::miscellaneous {
         using value_type = T;
         using delete_type = DeleteType;
 
-        constexpr unique_owner_default() : value{default_value} {}
+        constexpr unique_owner_default() : value{default_value} {
+        }
 
         constexpr static unique_owner_default from_exchanged(value_type &&value) {
             return unique_owner_default{std::exchange(value, default_value)};
@@ -580,7 +592,9 @@ namespace ywl::miscellaneous {
         }
 
     private:
-        explicit constexpr unique_owner_default(value_type value) : value{value} {}
+        explicit constexpr unique_owner_default(value_type value) : value{value} {
+        }
+
         value_type value;
     };
 
@@ -604,7 +618,8 @@ namespace ywl::miscellaneous {
 
         constexpr unique_owner_optional(unique_owner_optional &&other) noexcept : value{
             std::exchange(other.value, std::optional<value_type>{})
-        } {}
+        } {
+        }
 
         constexpr unique_owner_optional &operator=(const unique_owner_optional &) = delete;
 
@@ -648,7 +663,9 @@ namespace ywl::miscellaneous {
         }
 
     private:
-        explicit constexpr unique_owner_optional(value_type value) : value{value} {}
+        explicit constexpr unique_owner_optional(value_type value) : value{value} {
+        }
+
         std::optional<value_type> value;
     };
 }
