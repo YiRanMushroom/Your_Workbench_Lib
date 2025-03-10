@@ -57,6 +57,8 @@ namespace ywl::basic {
         [[nodiscard]] const std::stacktrace &get_stacktrace() const noexcept {
             return stacktrace;
         }
+
+        ~ywl_exception_base() noexcept override = default;
     };
 
     export class ywl_impl_error : public ywl_exception_base {
