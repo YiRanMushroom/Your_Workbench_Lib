@@ -5,6 +5,8 @@ module;
 
 export module ywl.util.logger;
 
+import ywl.basic.string_literal;
+
 namespace ywl::util {
     export class logger {
     private:
@@ -25,7 +27,8 @@ namespace ywl::util {
         constexpr logger &operator=(logger &&) = delete;
 
         constexpr logger(std::ostream *osp, std::string source, std::string level, bool is_enabled) : osp{osp},
-            source{std::move(source)}, level{std::move(level)}, is_enabled{is_enabled} {}
+            source{std::move(source)}, level{std::move(level)}, is_enabled{is_enabled} {
+        }
 
         constexpr logger &set_enabled(this logger &self, bool enabled) {
             self.is_enabled = enabled;
@@ -109,4 +112,31 @@ namespace ywl::util {
 
     export const inline auto default_logger = logger_builder{}.build();
     export const inline auto default_error_logger = logger_builder{}.set_os(std::cerr).set_level("ERROR").build();
+
+    export template<typename... Tps>
+    constexpr void printf(std::format_string<const Tps &...> fmt, const Tps &... args) {
+        std::cout << std::format(fmt, args...);
+    }
+
+    export template<typename... Tps>
+    constexpr void printf_ln(std::format_string<const Tps &...> fmt, const Tps &... args) {
+        std::cout << std::format(fmt, args...) << std::endl;
+    }
+
+    export template<ywl::basic::string_literal sep, typename... Tps>
+    constexpr void print(const Tps &... args) {
+        const std::tuple refs = std::forward_as_tuple(args...);
+        std::apply([&]<size_t ... Is>(std::index_sequence<Is...>) {
+            ((std::cout << std::get<Is>(refs),
+              (Is != sizeof...(Tps)
+                   ? (void) std::cout << sep
+                   : (void) nullptr)), ...);
+        }, std::make_index_sequence<sizeof...(Tps)>{});
+    }
+
+    export template<ywl::basic::string_literal sep, typename... Tps>
+    constexpr void print_ln(const Tps &... args) {
+        print<sep>(args...);
+        std::cout << std::endl;
+    }
 }
