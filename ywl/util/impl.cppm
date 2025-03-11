@@ -7,7 +7,7 @@ module;
 export module ywl.util.impl;
 
 namespace ywl::util {
-    export std::optional<std::string> get_istream_input(auto &is) {
+    export constexpr std::optional<std::string> get_istream_input(auto &is) {
         if (auto *buffer = is.rdbuf()) {
             int next = buffer->sgetc();
             if (next != std::ios::traits_type::eof()) {
