@@ -123,18 +123,19 @@ namespace ywl::util {
         std::cout << std::format(fmt, args...) << std::endl;
     }
 
-    export template<ywl::basic::string_literal sep, typename... Tps>
+    export template<ywl::basic::string_literal sep = " ", typename... Tps>
     constexpr void print(const Tps &... args) {
         const std::tuple refs = std::forward_as_tuple(args...);
         std::apply([&]<size_t ... Is>(std::index_sequence<Is...>) {
-            ((std::cout << std::get<Is>(refs),
+            ((std::cout <<
+                std::format("{}", std::get<Is>(refs)),
               (Is != sizeof...(Tps)
                    ? (void) std::cout << sep
                    : (void) nullptr)), ...);
         }, std::make_index_sequence<sizeof...(Tps)>{});
     }
 
-    export template<ywl::basic::string_literal sep, typename... Tps>
+    export template<ywl::basic::string_literal sep = " ", typename... Tps>
     constexpr void print_ln(const Tps &... args) {
         print<sep>(args...);
         std::cout << std::endl;
