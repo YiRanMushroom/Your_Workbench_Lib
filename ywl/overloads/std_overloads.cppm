@@ -6,12 +6,20 @@ export module ywl.overloads.std_overloads;
 
 import ywl.basic.string_literal;
 
+export struct ywl_overload_flag_t {
+    explicit constexpr ywl_overload_flag_t() = default;
+};
+
+export constexpr ywl_overload_flag_t ywl_overload_flag;
+
 namespace std {
     // now define hash_code in a class can be used in std::hash
-    export template<typename T> requires requires(T t) { { t.hash_code() } -> std::same_as<size_t>; }
+    export template<typename T> requires requires(const T& t) {
+        { t.hash_code(ywl_overload_flag) } -> std::same_as<size_t>;
+    }
     struct hash<T> {
         constexpr size_t operator()(const T &t) const {
-            return t.hash_code();
+            return t.hash_code(ywl_overload_flag);
         }
     };
 }
@@ -23,10 +31,14 @@ constexpr decltype(auto) operator""_fmt() {
     };
 }
 
-export template<typename T> requires (requires(T t) { t.to_string(); } && T::ywl_define_formatter == true)
+export template<typename T> requires requires(const T& t) {
+    { t.to_string(ywl_overload_flag) } -> std::convertible_to<std::string_view>;
+}
 struct std::formatter<T> { // NOLINT
     constexpr static auto parse(std::format_parse_context &ctx) {
-        if constexpr (requires { { T::parse_fmt(ctx) } -> std::same_as<std::format_parse_context>; }) {
+        if constexpr (requires {
+            { T::parse_fmt(ctx) } -> std::same_as<std::format_parse_context>;
+        }) {
             return T::parse_fmt(ctx);
         } else {
             return ctx.begin();
@@ -34,32 +46,6 @@ struct std::formatter<T> { // NOLINT
     }
 
     constexpr static auto format(const T &t, std::format_context &ctx) {
-        return std::format_to(ctx.out(), "{}", t.to_string());
-    }
-};
-
-namespace ywl {
-    export template<typename T>
-    struct format_type_function_ud {
-        /*constexpr static auto to_string(const T &t) = delete;
-
-        constexpr static std::format_parse_context parse_fmt(std::format_parse_context &ctx) = delete;*/
-    };
-}
-
-export template<typename T> requires (requires(T t) { ywl::format_type_function_ud<T>::to_string(t); })
-struct std::formatter<T> { // NOLINT
-    constexpr static auto parse(std::format_parse_context &ctx) {
-        if constexpr (requires {
-            { ywl::format_type_function_ud<T>::parse_fmt(ctx) } -> std::same_as<std::format_parse_context>;
-        }) {
-            return ywl::format_type_function_ud<T>::parse_fmt(ctx);
-        } else {
-            return ctx.begin();
-        }
-    }
-
-    constexpr static auto format(const T &t, std::format_context &ctx) {
-        return std::format_to(ctx.out(), "{}", ywl::format_type_function_ud<T>::to_string(t));
+        return std::format_to(ctx.out(), "{}", std::move(t.to_string(ywl_overload_flag)));
     }
 };
