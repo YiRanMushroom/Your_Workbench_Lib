@@ -49,3 +49,10 @@ struct std::formatter<T> { // NOLINT
         return std::format_to(ctx.out(), "{}", std::move(t.to_string(ywl_overload_flag)));
     }
 };
+
+export template<typename T> requires requires(const T& t) {
+    { t.to_string(ywl_overload_flag) } -> std::convertible_to<std::string_view>;
+}
+std::ostream& operator<<(std::ostream& os, const T& t) {
+    return os << t.to_string(ywl_overload_flag);
+}
