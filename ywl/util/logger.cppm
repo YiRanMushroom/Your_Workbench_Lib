@@ -129,7 +129,7 @@ namespace ywl::util {
         std::apply([&]<size_t ... Is>(std::index_sequence<Is...>) {
             ((std::cout <<
                 std::format("{}", std::get<Is>(refs)),
-              (Is != sizeof...(Tps)
+              (Is != sizeof...(Tps) - 1
                    ? (void) std::cout << sep.data
                    : (void) nullptr)), ...);
         }, std::make_index_sequence<sizeof...(Tps)>{});
