@@ -130,7 +130,7 @@ namespace ywl::util {
             ((std::cout <<
                 std::format("{}", std::get<Is>(refs)),
               (Is != sizeof...(Tps)
-                   ? (void) std::cout << sep
+                   ? (void) std::cout << sep.data
                    : (void) nullptr)), ...);
         }, std::make_index_sequence<sizeof...(Tps)>{});
     }
