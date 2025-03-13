@@ -6,13 +6,13 @@ module;
 export module ywl.basic.helpers;
 
 namespace ywl::basic {
-    template<auto * fn, typename Fn_T>
+    template<auto, typename>
     struct function_t_crtp {
         static_assert(false, "Fn_T is not a function or function pointer type");
     };
 
     template<auto * fn, typename Ret_T, typename... Args_T>
-    struct function_t_crtp<fn, Ret_T(Args_T...)> {
+    struct function_t_crtp<fn, Ret_T(*)(Args_T...)> {
         static_assert(std::is_invocable_v<decltype(fn), Args_T...>,
                       "The function pointer type does not match the function signature");
         using type = Ret_T(Args_T...);
