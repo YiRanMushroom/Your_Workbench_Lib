@@ -140,4 +140,32 @@ namespace ywl::util {
         print<sep>(args...);
         std::cout << std::endl;
     }
+
+    export template<typename... Tps>
+    constexpr void err_printf(std::format_string<const Tps &...> fmt, const Tps &... args) {
+        std::cerr << std::format(fmt, args...);
+    }
+
+    export template<typename... Tps>
+    constexpr void err_printf_ln(std::format_string<const Tps &...> fmt, const Tps &... args) {
+        std::cerr << std::format(fmt, args...) << std::endl;
+    }
+
+    export template<ywl::basic::string_literal sep = " ", typename... Tps>
+    constexpr void err_print(const Tps &... args) {
+        const std::tuple refs = std::forward_as_tuple(args...);
+        [&]<size_t ... Is>(std::index_sequence<Is...>) {
+            ((std::cerr <<
+              std::format("{}", std::get<Is>(refs)),
+              (Is != sizeof...(Tps) - 1
+                   ? (void) (std::cerr << sep.data)
+                   : (void) nullptr)), ...);
+        }(std::make_index_sequence<sizeof...(Tps)>{});
+    }
+
+    export template<ywl::basic::string_literal sep = " ", typename... Tps>
+    constexpr void err_print_ln(const Tps &... args) {
+        print<sep>(args...);
+        std::cerr << std::endl;
+    }
 }
