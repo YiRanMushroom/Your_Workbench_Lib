@@ -17,7 +17,7 @@ namespace ywl::basic {
                       "The function pointer type does not match the function signature");
         using type = Ret_T(Args_T...);
 
-        Ret_T operator()(Args_T... args) const noexcept(noexcept(fn(std::forward<Args_T>(args)...))) {
+        constexpr Ret_T operator()(Args_T... args) const noexcept(noexcept(fn(std::forward<Args_T>(args)...))) {
             return fn(std::forward<Args_T>(args)...);
         }
     };
