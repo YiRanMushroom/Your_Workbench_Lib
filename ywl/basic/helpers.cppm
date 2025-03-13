@@ -15,10 +15,14 @@ namespace ywl::basic {
     struct function_t_crtp<fn, Ret_T(*)(Args_T...)> {
         static_assert(std::is_invocable_v<decltype(fn), Args_T...>,
                       "The function pointer type does not match the function signature");
-        using type = Ret_T(Args_T...);
+        using function_ptr_type = Ret_T(*)(Args_T...);
 
         constexpr Ret_T operator()(Args_T... args) const noexcept(noexcept(fn(std::forward<Args_T>(args)...))) {
             return fn(std::forward<Args_T>(args)...);
+        }
+
+        constexpr operator function_ptr_type () const noexcept { // NOLINT
+            return fn;
         }
     };
 
