@@ -21,7 +21,7 @@ namespace ywl::basic {
             return fn(std::forward<Args_T>(args)...);
         }
 
-        constexpr operator function_ptr_type () const noexcept { // NOLINT
+        constexpr operator function_ptr_type() const noexcept { // NOLINT
             return fn;
         }
     };
