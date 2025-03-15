@@ -12,28 +12,28 @@ namespace ywl::miscellaneous::coroutine {
 
             std::exception_ptr exception;
 
-            coroutine_generator_task_impl_t get_return_object() {
+            constexpr coroutine_generator_task_impl_t get_return_object() {
                 return coroutine_generator_task_impl_t{
                     std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
                 };
             }
 
-            std::suspend_always initial_suspend() { // NOLINT
+            constexpr std::suspend_always initial_suspend() { // NOLINT
                 return {};
             }
 
-            std::suspend_always final_suspend() noexcept { // NOLINT
+            constexpr std::suspend_always final_suspend() noexcept { // NOLINT
                 return {};
             }
 
-            void unhandled_exception() {
+            constexpr void unhandled_exception() {
                 exception = std::current_exception();
             }
 
-            void return_void() { // NOLINT
+            constexpr void return_void() { // NOLINT
             }
 
-            std::suspend_always yield_value(ResultType value) {
+            constexpr std::suspend_always yield_value(ResultType value) {
                 result = std::move(value);
                 return {};
             }
@@ -42,33 +42,33 @@ namespace ywl::miscellaneous::coroutine {
             struct Awaiter {
                 Co_Await_Type co_await_value;
 
-                [[nodiscard]] static constexpr bool await_ready() noexcept {
+                [[nodiscard]] constexpr static bool await_ready() noexcept {
                     return false;
                 }
 
-                void await_suspend(std::coroutine_handle<coroutine_generator_promise_type>) {
+                constexpr void await_suspend(std::coroutine_handle<coroutine_generator_promise_type>) {
                     // do nothing
                 }
 
-                Co_Await_Type await_resume() {
+                constexpr Co_Await_Type await_resume() {
                     return std::move(co_await_value);
                 }
 
-                explicit Awaiter(Co_Await_Type co_await_value) : co_await_value{std::move(co_await_value)} {
+                constexpr explicit Awaiter(Co_Await_Type co_await_value) : co_await_value{std::move(co_await_value)} {
                 }
             };
 
             std::optional<Awaiter> awaiter;
 
         public:
-            Awaiter await_transform(nullptr_t) {
+            constexpr Awaiter await_transform(nullptr_t) {
                 if (!awaiter) {
                     throw ywl::basic::ywl_impl_error{"Implementation error in ywl: coroutine_generator_task_impl_t"};
                 }
                 return std::exchange(awaiter, std::nullopt).value();
             }
 
-            void set_awaiter(Co_Await_Type co_await_value) {
+            constexpr void set_awaiter(Co_Await_Type co_await_value) {
                 awaiter.emplace(std::move(co_await_value));
             }
 
@@ -80,7 +80,7 @@ namespace ywl::miscellaneous::coroutine {
                 }
             }
 
-            void rethrow_if_has_exception() {
+            constexpr void rethrow_if_has_exception() {
                 if (exception) {
                     auto e = exception;
                     exception = nullptr;
@@ -97,32 +97,32 @@ namespace ywl::miscellaneous::coroutine {
         handle_type handle;
 
     public:
-        explicit coroutine_generator_task_impl_t(handle_type handle) : handle{handle} {
+        constexpr explicit coroutine_generator_task_impl_t(handle_type handle) : handle{handle} {
         }
 
-        coroutine_generator_task_impl_t(const coroutine_generator_task_impl_t &) = delete;
+        constexpr coroutine_generator_task_impl_t(const coroutine_generator_task_impl_t &) = delete;
 
-        coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&) = delete;
+        constexpr coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&) = delete;
 
-        coroutine_generator_task_impl_t &operator=(const coroutine_generator_task_impl_t &) = delete;
+        constexpr coroutine_generator_task_impl_t &operator=(const coroutine_generator_task_impl_t &) = delete;
 
-        coroutine_generator_task_impl_t &operator=(coroutine_generator_task_impl_t &&) = delete;
+        constexpr coroutine_generator_task_impl_t &operator=(coroutine_generator_task_impl_t &&) = delete;
 
-        bool is_done() const {
+        constexpr bool is_done() const {
             return handle.done();
         }
 
-        operator bool() const {
+        constexpr operator bool() const {
             return !is_done();
         }
 
-        ~coroutine_generator_task_impl_t() {
+        constexpr ~coroutine_generator_task_impl_t() {
             if (handle) {
                 handle.destroy();
             }
         }
 
-        std::optional<ResultType> yield_optional(Co_Await_Type co_await_value) {
+        constexpr std::optional<ResultType> yield_optional(Co_Await_Type co_await_value) {
             handle.promise().set_awaiter(std::move(co_await_value));
             while (!handle.done()) {
                 handle.promise().rethrow_if_has_exception();
@@ -135,11 +135,11 @@ namespace ywl::miscellaneous::coroutine {
             return {};
         }
 
-        ResultType yield_value(Co_Await_Type co_await_value) {
+        constexpr ResultType yield_value(Co_Await_Type co_await_value) {
             return *yield_optional(std::move(co_await_value));
         }
 
-        void rethrow_if_has_exception() {
+        constexpr void rethrow_if_has_exception() {
             handle.promise().rethrow_if_has_exception();
         }
     };
@@ -152,55 +152,55 @@ namespace ywl::miscellaneous::coroutine {
 
             std::exception_ptr exception;
 
-            coroutine_generator_task_impl_t get_return_object() {
+            constexpr coroutine_generator_task_impl_t get_return_object() {
                 return coroutine_generator_task_impl_t{
                     std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
                 };
             }
 
-            std::suspend_always initial_suspend() noexcept { // NOLINT
+            constexpr std::suspend_always initial_suspend() noexcept { // NOLINT
                 return {};
             }
 
-            std::suspend_always final_suspend() noexcept { // NOLINT
+            constexpr std::suspend_always final_suspend() noexcept { // NOLINT
                 return {};
             }
 
-            void unhandled_exception() {
+            constexpr void unhandled_exception() {
                 exception = std::current_exception();
             }
 
-            void return_void() { // NOLINT
+            constexpr void return_void() { // NOLINT
             }
 
-            std::suspend_always yield_value(ResultType value) {
+            constexpr std::suspend_always yield_value(ResultType value) {
                 result = std::move(value);
                 return {};
             }
 
         private:
             struct Awaiter {
-                [[nodiscard]] static constexpr bool await_ready() noexcept {
+                [[nodiscard]] constexpr static bool await_ready() noexcept {
                     return false;
                 }
 
-                void await_suspend(std::coroutine_handle<coroutine_generator_promise_type>) {
+                constexpr void await_suspend(std::coroutine_handle<coroutine_generator_promise_type>) {
                     // do nothing
                 }
 
-                static void await_resume() {
+                constexpr static void await_resume() {
                     // do nothing
                 }
 
-                Awaiter() = default;
+                constexpr Awaiter() = default;
             };
 
         public:
-            Awaiter await_transform(nullptr_t) {
+            constexpr Awaiter await_transform(nullptr_t) {
                 return {};
             }
 
-            void set_awaiter() {
+            constexpr void set_awaiter() {
             }
 
             ~coroutine_generator_promise_type() {
@@ -211,7 +211,7 @@ namespace ywl::miscellaneous::coroutine {
                 }
             }
 
-            void rethrow_if_has_exception() {
+            constexpr void rethrow_if_has_exception() {
                 if (exception) {
                     auto e = exception;
                     exception = nullptr;
@@ -228,32 +228,32 @@ namespace ywl::miscellaneous::coroutine {
         handle_type handle;
 
     public:
-        explicit coroutine_generator_task_impl_t(handle_type handle) : handle{handle} {
+        constexpr explicit coroutine_generator_task_impl_t(handle_type handle) : handle{handle} {
         }
 
-        coroutine_generator_task_impl_t(const coroutine_generator_task_impl_t &) = delete;
+        constexpr coroutine_generator_task_impl_t(const coroutine_generator_task_impl_t &) = delete;
 
-        coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&) = delete;
+        constexpr coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&) = delete;
 
-        coroutine_generator_task_impl_t &operator=(const coroutine_generator_task_impl_t &) = delete;
+        constexpr coroutine_generator_task_impl_t &operator=(const coroutine_generator_task_impl_t &) = delete;
 
-        coroutine_generator_task_impl_t &operator=(coroutine_generator_task_impl_t &&) = delete;
+        constexpr coroutine_generator_task_impl_t &operator=(coroutine_generator_task_impl_t &&) = delete;
 
-        bool is_done() const {
+        constexpr bool is_done() const {
             return handle.done();
         }
 
-        operator bool() const {
+        constexpr operator bool() const {
             return !is_done();
         }
 
-        ~coroutine_generator_task_impl_t() {
+        constexpr ~coroutine_generator_task_impl_t() {
             if (handle) {
                 handle.destroy();
             }
         }
 
-        std::optional<ResultType> yield_optional() {
+        constexpr std::optional<ResultType> yield_optional() {
             while (!handle.done()) {
                 handle.promise().rethrow_if_has_exception();
                 handle.resume();
@@ -265,11 +265,11 @@ namespace ywl::miscellaneous::coroutine {
             return {};
         }
 
-        ResultType yield_value() {
+        constexpr ResultType yield_value() {
             return *yield_optional();
         }
 
-        void rethrow_if_has_exception() {
+        constexpr void rethrow_if_has_exception() {
             handle.promise().rethrow_if_has_exception();
         }
     };
