@@ -55,6 +55,8 @@ module;
 #include <future>
 #include <atomic>
 
+#include <cstdint>
+
 export module ywl.std.prelude;
 
 export namespace std {
@@ -261,6 +263,7 @@ export namespace std {
 
     using std::thread;
     using std::jthread;
+
     namespace this_thread {
         using std::this_thread::get_id;
         using std::this_thread::yield;
@@ -310,14 +313,14 @@ export namespace std {
     using std::stringstream;
 }
 
-export using size_t = std::size_t;
-export using uint8_t = std::uint8_t;
-export using uint16_t = std::uint16_t;
-export using uint32_t = std::uint32_t;
-export using uint64_t = std::uint64_t;
-export using int8_t = std::int8_t;
-export using int16_t = std::int16_t;
-export using int32_t = std::int32_t;
-export using int64_t = std::int64_t;
+export using size_t = size_t;
+export using uint8_t = uint8_t;
+export using uint16_t = uint16_t;
+export using uint32_t = uint32_t;
+export using uint64_t = uint64_t;
+export using int8_t = int8_t;
+export using int16_t = int16_t;
+export using int32_t = int32_t;
+export using int64_t = int64_t;
 
-export using nullptr_t = std::nullptr_t;
+export using nullptr_t = nullptr_t;
