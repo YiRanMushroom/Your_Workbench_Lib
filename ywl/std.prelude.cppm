@@ -43,10 +43,6 @@ module;
 
 #include <format>
 
-#include <fstream>
-
-#include <iostream>
-
 #include <limits>
 
 #include <random>
@@ -58,8 +54,6 @@ module;
 #include <thread>
 #include <future>
 #include <atomic>
-
-#include <sstream>
 
 export module ywl.std.prelude;
 
@@ -238,14 +232,6 @@ export namespace std {
     using std::streamoff;
     using std::streamsize;
 
-    using std::istream;
-    using std::ostream;
-    using std::iostream;
-    using std::cout;
-    using std::cerr;
-    using std::endl;
-    using std::cin;
-
     using size_t = std::size_t;
 
     using std::numeric_limits;
@@ -335,18 +321,3 @@ export
 
     using nullptr_t = std::nullptr_t;
 }
-
-export template<typename T>
-std::ostream& operator<<(std::ostream&, const T&);
-
-export template<typename T>
-std::istream& operator>>(std::istream&, T&);
-
-// std::endl
-export std::ostream& endl(std::ostream&);
-
-export template<typename T>
-std::stringstream& operator<<(std::stringstream&, const T&);
-
-export template<typename T>
-std::stringstream& operator<<(std::stringstream&, T&&);
