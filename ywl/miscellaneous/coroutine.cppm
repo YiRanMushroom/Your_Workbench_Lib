@@ -274,7 +274,7 @@ namespace ywl::miscellaneous::coroutine {
         }
     };
 
-    export template<typename T>
+    export template<typename Function_Type>
     struct generator_task {
         static_assert(false, "T is not an acceptable function type");
     };
