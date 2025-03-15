@@ -8,13 +8,13 @@ namespace ywl::miscellaneous::coroutine {
     class coroutine_generator_task_impl_t {
     private:
         struct coroutine_generator_promise_type {
-            std::optional<ResultType> result;
+            std::optional <ResultType> result;
 
             std::exception_ptr exception;
 
             constexpr coroutine_generator_task_impl_t get_return_object() {
                 return coroutine_generator_task_impl_t{
-                    std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
+                        std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
                 };
             }
 
@@ -46,7 +46,7 @@ namespace ywl::miscellaneous::coroutine {
                     return false;
                 }
 
-                constexpr void await_suspend(std::coroutine_handle<coroutine_generator_promise_type>) {
+                constexpr void await_suspend(std::coroutine_handle <coroutine_generator_promise_type>) {
                     // do nothing
                 }
 
@@ -58,7 +58,7 @@ namespace ywl::miscellaneous::coroutine {
                 }
             };
 
-            std::optional<Awaiter> awaiter;
+            std::optional <Awaiter> awaiter;
 
         public:
             constexpr Awaiter await_transform(nullptr_t) {
@@ -102,11 +102,17 @@ namespace ywl::miscellaneous::coroutine {
 
         constexpr coroutine_generator_task_impl_t(const coroutine_generator_task_impl_t &) = delete;
 
-        constexpr coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&) = delete;
+        constexpr coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&other) noexcept
+                : handle{std::exchange(other.handle, nullptr)} {
+        }
 
         constexpr coroutine_generator_task_impl_t &operator=(const coroutine_generator_task_impl_t &) = delete;
 
-        constexpr coroutine_generator_task_impl_t &operator=(coroutine_generator_task_impl_t &&) = delete;
+        constexpr coroutine_generator_task_impl_t &operator=(coroutine_generator_task_impl_t &&other) noexcept {
+            coroutine_generator_task_impl_t dropped = std::move(*this);
+            handle = std::exchange(other.handle, nullptr);
+            return *this;
+        }
 
         constexpr bool is_done() const {
             return handle.done();
@@ -122,7 +128,7 @@ namespace ywl::miscellaneous::coroutine {
             }
         }
 
-        constexpr std::optional<ResultType> yield_optional(Co_Await_Type co_await_value) {
+        constexpr std::optional <ResultType> yield_optional(Co_Await_Type co_await_value) {
             handle.promise().set_awaiter(std::move(co_await_value));
             while (!handle.done()) {
                 handle.promise().rethrow_if_has_exception();
@@ -148,13 +154,13 @@ namespace ywl::miscellaneous::coroutine {
     class coroutine_generator_task_impl_t<ResultType, void> {
     private:
         struct coroutine_generator_promise_type {
-            std::optional<ResultType> result;
+            std::optional <ResultType> result;
 
             std::exception_ptr exception;
 
             constexpr coroutine_generator_task_impl_t get_return_object() {
                 return coroutine_generator_task_impl_t{
-                    std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
+                        std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
                 };
             }
 
@@ -184,7 +190,7 @@ namespace ywl::miscellaneous::coroutine {
                     return false;
                 }
 
-                constexpr void await_suspend(std::coroutine_handle<coroutine_generator_promise_type>) {
+                constexpr void await_suspend(std::coroutine_handle <coroutine_generator_promise_type>) {
                     // do nothing
                 }
 
@@ -233,11 +239,17 @@ namespace ywl::miscellaneous::coroutine {
 
         constexpr coroutine_generator_task_impl_t(const coroutine_generator_task_impl_t &) = delete;
 
-        constexpr coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&) = delete;
-
         constexpr coroutine_generator_task_impl_t &operator=(const coroutine_generator_task_impl_t &) = delete;
 
-        constexpr coroutine_generator_task_impl_t &operator=(coroutine_generator_task_impl_t &&) = delete;
+        constexpr coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&other) noexcept
+                : handle{std::exchange(other.handle, nullptr)} {
+        }
+
+        constexpr coroutine_generator_task_impl_t &operator=(coroutine_generator_task_impl_t &&other) noexcept {
+            coroutine_generator_task_impl_t dropped = std::move(*this);
+            handle = std::exchange(other.handle, nullptr);
+            return *this;
+        }
 
         constexpr bool is_done() const {
             return handle.done();
@@ -253,7 +265,7 @@ namespace ywl::miscellaneous::coroutine {
             }
         }
 
-        constexpr std::optional<ResultType> yield_optional() {
+        constexpr std::optional <ResultType> yield_optional() {
             while (!handle.done()) {
                 handle.promise().rethrow_if_has_exception();
                 handle.resume();
