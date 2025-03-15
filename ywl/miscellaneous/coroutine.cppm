@@ -274,13 +274,21 @@ namespace ywl::miscellaneous::coroutine {
         }
     };
 
+    template<typename Function_Type>
+    struct generator_task_impl {
+        static_assert(false, "template parameter of generator_task must be a function type");
+    };
+
+    template<typename ResultType, typename Arg>
+    struct generator_task_impl<ResultType(Arg)> {
+        using type = coroutine_generator_task_impl_t<ResultType, Arg>;
+    };
+
+    template<typename ResultType>
+    struct generator_task_impl<ResultType()> {
+        using type = coroutine_generator_task_impl_t<ResultType, void>;
+    };
+
     export template<typename Function_Type>
-    struct generator_task {
-        static_assert(false, "T is not an acceptable function type");
-    };
-
-    export template<typename Ret_T, typename Arg_T>
-    struct generator_task<Ret_T(Arg_T)> : coroutine_generator_task_impl_t<Ret_T, Arg_T> {
-
-    };
+    using generator_task = typename generator_task_impl<Function_Type>::type;
 }
