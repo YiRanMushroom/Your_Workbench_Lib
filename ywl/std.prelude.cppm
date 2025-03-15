@@ -335,3 +335,18 @@ export
 
     using nullptr_t = std::nullptr_t;
 }
+
+export template<typename T>
+std::ostream& operator<<(std::ostream&, const T&);
+
+export template<typename T>
+std::istream& operator>>(std::istream&, T&);
+
+// std::endl
+export std::ostream& endl(std::ostream&);
+
+export template<typename T>
+std::stringstream& operator<<(std::stringstream&, const T&);
+
+export template<typename T>
+std::stringstream& operator<<(std::stringstream&, T&&);
