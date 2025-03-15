@@ -114,14 +114,27 @@ namespace ywl::util {
     export const inline auto default_logger = logger_builder{}.build();
     export const inline auto default_error_logger = logger_builder{}.set_os(std::cerr).set_level("ERROR").build();
 
+    inline struct flusher_t {
+        std::ostream& os;
+
+        flusher_t(const flusher_t&) = delete;
+
+        flusher_t(std::ostream& os) : os{os} {}
+
+        void flush() const {
+            os.flush();
+        }
+    } cout_flusher{std::cout}, cerr_flusher{std::cerr};
+
     export template<typename... Tps>
     constexpr void printf(std::format_string<const Tps &...> fmt, const Tps &... args) {
         std::cout << std::format(fmt, args...);
     }
 
     export template<typename... Tps>
-    constexpr void printf_ln(std::format_string<const Tps &...> fmt, const Tps &... args) {
-        std::cout << std::format(fmt, args...) << std::endl;
+    constexpr const flusher_t& printf_ln(std::format_string<const Tps &...> fmt, const Tps &... args) {
+        std::cout << std::format(fmt, args...) << '\n';
+        return cout_flusher;
     }
 
     export template<ywl::basic::string_literal sep = " ", typename... Tps>
@@ -137,9 +150,10 @@ namespace ywl::util {
     }
 
     export template<ywl::basic::string_literal sep = " ", typename... Tps>
-    constexpr void print_ln(const Tps &... args) {
+    constexpr const flusher_t& print_ln(const Tps &... args) {
         print<sep>(args...);
-        std::cout << std::endl;
+        std::cout << '\n';
+        return cout_flusher;
     }
 
     export template<typename... Tps>
@@ -148,8 +162,9 @@ namespace ywl::util {
     }
 
     export template<typename... Tps>
-    constexpr void err_printf_ln(std::format_string<const Tps &...> fmt, const Tps &... args) {
-        std::cerr << std::format(fmt, args...) << std::endl;
+    constexpr const flusher_t& err_printf_ln(std::format_string<const Tps &...> fmt, const Tps &... args) {
+        std::cerr << std::format(fmt, args...) << '\n';
+        return cerr_flusher;
     }
 
     export template<ywl::basic::string_literal sep = " ", typename... Tps>
@@ -165,8 +180,9 @@ namespace ywl::util {
     }
 
     export template<ywl::basic::string_literal sep = " ", typename... Tps>
-    constexpr void err_print_ln(const Tps &... args) {
+    constexpr const flusher_t& err_print_ln(const Tps &... args) {
         print<sep>(args...);
-        std::cerr << std::endl;
+        std::cerr << '\n';
+        return cerr_flusher;
     }
 }
