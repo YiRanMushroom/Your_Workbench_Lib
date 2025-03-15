@@ -168,6 +168,9 @@ export namespace std {
     using std::exception;
     using std::runtime_error;
     using std::logic_error;
+    using std::current_exception;
+    using std::rethrow_exception;
+    using std::exception_ptr;
 
     using std::string_view;
 

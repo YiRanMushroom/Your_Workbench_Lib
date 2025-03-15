@@ -15,7 +15,8 @@ file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
 add_library(${PROJECT_NAME} ${MODULES}
         ywl/miscellaneous/simple_buffer.cppm
         ywl/prelude.ixx
-        ywl/std.prelude.cppm)
+        ywl/std.prelude.cppm
+        ywl/miscellaneous/coroutine.cppm)
 
 target_sources(${PROJECT_NAME}
         PUBLIC
