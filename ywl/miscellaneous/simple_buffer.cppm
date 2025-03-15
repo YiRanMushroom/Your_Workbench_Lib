@@ -1,12 +1,8 @@
 module;
 
 #include <cassert>
-#include <concepts>
-#include <cstring>
-#include <map>
-#include <string>
-#include <unordered_map>
-#include <vector>
+
+import ywl.std.prelude;
 
 export module ywl.miscellaneous.simple_buffer;
 

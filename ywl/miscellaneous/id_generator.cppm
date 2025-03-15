@@ -1,7 +1,6 @@
 module;
 
-#include <vector>
-#include <stdexcept>
+import ywl.std.prelude;
 
 export module ywl.miscellaneous.id_generator;
 

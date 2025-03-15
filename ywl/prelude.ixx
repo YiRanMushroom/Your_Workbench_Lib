@@ -1,8 +1,7 @@
 export module ywl.prelude;
 
-import ywl.all;
-
 export import ywl.all;
+export import ywl.std.prelude;
 
 export using ywl::util::print_ln;
 export using ywl::util::printf_ln;

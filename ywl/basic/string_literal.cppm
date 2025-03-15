@@ -1,11 +1,11 @@
 module;
 
-#include <algorithm>
+import ywl.std.prelude;
 
 export module ywl.basic.string_literal;
 
 namespace ywl::basic {
-    export template<std::size_t N>
+    export template<size_t N>
     struct string_literal {
         char data[N];
 

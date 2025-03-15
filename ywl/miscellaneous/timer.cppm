@@ -1,6 +1,6 @@
 module;
 
-#include <chrono>
+import ywl.std.prelude;
 
 export module ywl.miscellaneous.timer;
 
