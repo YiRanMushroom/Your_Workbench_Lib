@@ -121,7 +121,7 @@ namespace ywl::util {
 
         flusher_t(std::ostream& os) : os{os} {}
 
-        void flush() const {
+        constexpr void flush() const {
             os.flush();
         }
     } cout_flusher{std::cout}, cerr_flusher{std::cerr};
