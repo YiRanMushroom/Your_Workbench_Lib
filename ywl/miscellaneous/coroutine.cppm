@@ -4,12 +4,12 @@ import ywl.std.prelude;
 import ywl.basic.exceptions;
 
 namespace ywl::miscellaneous::coroutine {
-    template<typename ResultType, typename Co_Await_Type, typename FeedBack_Type>
+    template<typename ResultType, typename Co_Await_Type, typename Feedback_Type>
     class coroutine_generator_task_impl_t {
     private:
         struct coroutine_generator_promise_type {
             std::optional<ResultType> result;
-            std::optional<FeedBack_Type> feedback;
+            std::optional<Feedback_Type> feedback;
             std::exception_ptr exception;
 
             constexpr coroutine_generator_task_impl_t get_return_object() {
@@ -61,19 +61,19 @@ namespace ywl::miscellaneous::coroutine {
             std::optional<Awaiter> awaiter;
 
         public:
-            constexpr Awaiter await_transform(std::convertible_to<FeedBack_Type> auto &&feed_back) {
-                if (!awaiter) {
+            constexpr Awaiter await_transform(this coroutine_generator_promise_type& self, std::convertible_to<Feedback_Type> auto &&feedback) {
+                if (!self.awaiter) {
                     throw ywl::basic::ywl_impl_error{"Implementation error in ywl: coroutine_generator_task_impl_t"};
                 }
-                feed_back = std::optional<FeedBack_Type>{std::move(feed_back)};
-                return std::exchange(awaiter, std::nullopt).value();
+                self.feedback = std::optional<Feedback_Type>{std::move(feedback)};
+                return std::exchange(self.awaiter, std::nullopt).value();
             }
 
             constexpr void set_awaiter(Co_Await_Type co_await_value) {
                 awaiter.emplace(std::move(co_await_value));
             }
 
-            constexpr std::optional<FeedBack_Type> get_feedback() {
+            constexpr std::optional<Feedback_Type> get_feedback() {
                 return std::exchange(feedback, std::nullopt);
             }
 
@@ -207,8 +207,8 @@ namespace ywl::miscellaneous::coroutine {
             };
 
         public:
-            constexpr Awaiter await_transform(std::convertible_to<Feedback_Type> auto &&feed_back) {
-                feed_back = std::optional<Feedback_Type>{std::move(feed_back)};
+            constexpr Awaiter await_transform(this coroutine_generator_promise_type& self, std::convertible_to<Feedback_Type> auto &&feedback) {
+                self.feedback = std::optional<Feedback_Type>{std::move(feedback)};
                 return {};
             }
 
