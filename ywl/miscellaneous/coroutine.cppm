@@ -153,7 +153,7 @@ namespace ywl::miscellaneous::coroutine {
         }
 
         constexpr void set_feedback_callback(std::invocable<Feedback_Type> auto &&callback) {
-            handle->feedback_callback = std::forward<decltype(callback)>(callback);
+            handle.promise().feedback_callback = std::forward<decltype(callback)>(callback);
         }
     };
 
@@ -296,7 +296,7 @@ namespace ywl::miscellaneous::coroutine {
         }
 
         constexpr void set_feedback_callback(std::invocable<Feedback_Type> auto &&callback) {
-            handle->feedback_callback = std::forward<decltype(callback)>(callback);
+            handle.promise().feedback_callback = std::forward<decltype(callback)>(callback);
         }
     };
 
