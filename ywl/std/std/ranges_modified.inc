@@ -150,8 +150,7 @@ export namespace std {
     //   function.
     // This is used internally in C++20 mode.
     // using std::ranges::operator|;
-    using ::operator|;
-    using ::std::operator|;
+    using std::ranges::_Pipe::operator|;
 #if _LIBCPP_STD_VER >= 23
     // [range.adaptor.object], range adaptor objects
     using std::ranges::range_adaptor_closure;
