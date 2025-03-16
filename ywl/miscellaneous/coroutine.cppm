@@ -311,6 +311,6 @@ namespace ywl::miscellaneous::coroutine {
         using type = coroutine_generator_task_impl_t<ResultType, void, Feedback_Type>;
     };
 
-    export template<typename Function_Type>
-    using generator_task = typename generator_task_impl<Function_Type>::type;
+    export template<typename Function_Type, typename Feedback_Type = nullptr_t>
+    using generator_task = typename generator_task_impl<Function_Type, Feedback_Type>::type;
 }
