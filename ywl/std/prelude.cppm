@@ -1,321 +1,347 @@
 module;
-#include <utility>
-#include <tuple>
 
-#include <vector>
-#include <string>
-#include <array>
-#include <functional>
-#include <list>
+#define _LIBCPP_HAS_LOCALIZATION 1
+#define _LIBCPP_HAS_ATOMIC_HEADER 1
+#define _LIBCPP_HAS_RANDOM_DEVICE 1
 
-#include <queue>
-#include <stack>
-#include <deque>
-
+// The headers of Table 24: C++ library headers [tab:headers.cpp]
+// and the headers of Table 25: C++ headers for C library facilities [tab:headers.cpp.c]
 #include <algorithm>
-
+#include <any>
+#include <array>
+#if _LIBCPP_HAS_ATOMIC_HEADER
+#  include <atomic>
+#endif
+#include <barrier>
+#include <bit>
+#include <bitset>
+#include <cassert>
+#include <cctype>
+#include <cerrno>
+#include <cfenv>
+#include <cfloat>
+#include <charconv>
+#include <chrono>
+#include <cinttypes>
+#include <climits>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <clocale>
+#endif
+#include <cmath>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <codecvt>
+#endif
+#include <compare>
+#include <complex>
+#include <concepts>
+#include <condition_variable>
+#include <coroutine>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <cuchar>
+#include <cwchar>
+#include <cwctype>
+#include <deque>
+#include <exception>
+#include <execution>
+#include <expected>
+#include <filesystem>
+#include <format>
+#include <forward_list>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <fstream>
+#endif
+#include <functional>
+#include <future>
+#include <initializer_list>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <iomanip>
+#endif
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <ios>
+#endif
+#include <iosfwd>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <iostream>
+#endif
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <istream>
+#endif
+#include <iterator>
+#include <latch>
+#include <limits>
+#include <list>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <locale>
+#endif
+#include <map>
+#include <mdspan>
+#include <memory>
+#include <memory_resource>
+#include <mutex>
+#include <new>
+#include <numbers>
+#include <numeric>
+#include <optional>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <ostream>
+#endif
+#include <print>
+#include <queue>
+#include <random>
+#include <ranges>
+#include <ratio>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <regex>
+#endif
+#include <scoped_allocator>
+#include <semaphore>
+#include <set>
+#include <shared_mutex>
+#include <source_location>
+#include <span>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <sstream>
+#endif
+#include <stack>
+#include <stdexcept>
+#include <stop_token>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <streambuf>
+#endif
+#include <string>
+#include <string_view>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <strstream>
+#endif
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <syncstream>
+#endif
+#include <system_error>
+#include <thread>
+#include <tuple>
+#include <type_traits>
+#include <typeindex>
+#include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
-#include <map>
-#include <set>
-
-#include <type_traits>
-
-#include <optional>
+#include <utility>
+#include <valarray>
 #include <variant>
-#include <any>
-#include <exception>
+#include <vector>
+#include <version>
 
-#include <string_view>
+// *** Headers not yet available ***
+//
+// This validation is mainly to catch when a new header is added but adding the
+// corresponding .inc file is forgotten. However, the check based on __has_include
+// alone doesn't work on Windows because the Windows SDK is on the include path,
+// and that means the MSVC STL headers can be found as well, tricking __has_include
+// into thinking that libc++ provides the header.
+//
+#ifndef _WIN32
+#  if __has_include(<debugging>)
+#    error "please update the header information for <debugging> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<debugging>)
+#  if __has_include(<flat_set>)
+#    error "please update the header information for <flat_set> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<flat_set>)
+#  if __has_include(<generator>)
+#    error "please update the header information for <generator> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<generator>)
+#  if __has_include(<hazard_pointer>)
+#    error "please update the header information for <hazard_pointer> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<hazard_pointer>)
+#  if __has_include(<inplace_vector>)
+#    error "please update the header information for <inplace_vector> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<inplace_vector>)
+#  if __has_include(<linalg>)
+#    error "please update the header information for <linalg> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<linalg>)
+#  if __has_include(<rcu>)
+#    error "please update the header information for <rcu> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<rcu>)
+#  if __has_include(<spanstream>)
+#    error "please update the header information for <spanstream> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<spanstream>)
+#  if __has_include(<stacktrace>)
+#    error "please update the header information for <stacktrace> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<stacktrace>)
+#  if __has_include(<stdfloat>)
+#    error "please update the header information for <stdfloat> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<stdfloat>)
+#  if __has_include(<text_encoding>)
+#    error "please update the header information for <text_encoding> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<text_encoding>)
+#endif // _WIN32
 
-#include <expected>
-
-#include <iterator>
-
+// addtional
 #include <stacktrace>
-
-#include <source_location>
-
-#include <concepts>
-
-#include <coroutine>
-
-#include <format>
-
-#include <limits>
-
-#include <random>
-
-#include <mutex>
-#include <shared_mutex>
-#include <condition_variable>
-
-#include <thread>
-#include <future>
-#include <atomic>
-
-#include <cstdint>
 
 export module ywl.std.prelude;
 
-export import ywl.std.memory;
+#define _LIBCPP_USING_IF_EXISTS
 
-export namespace std {
-    using std::move;
-    using std::forward;
-    using std::pair;
-    using std::make_pair;
-    using std::tuple;
-    using std::make_tuple;
-    using std::get;
-    using std::forward_as_tuple;
-    using std::tie;
+#include "std/algorithm.inc"
+#include "std/any.inc"
+#include "std/array.inc"
+#include "std/atomic.inc"
+#include "std/barrier.inc"
+#include "std/bit.inc"
+#include "std/bitset.inc"
+#include "std/cassert.inc"
+#include "std/cctype.inc"
+#include "std/cerrno.inc"
+#include "std/cfenv.inc"
+#include "std/cfloat.inc"
+#include "std/charconv.inc"
+#include "std/chrono.inc"
+#include "std/cinttypes.inc"
+#include "std/climits.inc"
+#include "std/clocale.inc"
+#include "std/cmath.inc"
+#include "std/codecvt.inc"
+#include "std/complex.inc"
+#include "std/condition_variable.inc"
+#include "std/coroutine.inc"
+#include "std/csetjmp.inc"
+#include "std/csignal.inc"
+#include "std/cstdarg.inc"
+#include "std/cstddef.inc"
+#include "std/cstdint.inc"
+#include "std/cstdio.inc"
+#include "std/cstring.inc"
+#include "std/cuchar.inc"
+#include "std/cwchar.inc"
+#include "std/cwctype.inc"
+#include "std/deque.inc"
+#include "std/exception.inc"
+#include "std/execution.inc"
+#include "std/expected.inc"
+#include "std/filesystem.inc"
+#include "std/flat_set.inc"
+#include "std/format.inc"
+#include "std/forward_list.inc"
+#include "std/fstream.inc"
+#include "std/functional.inc"
+#include "std/future.inc"
+#include "std/generator.inc"
+#include "std/hazard_pointer.inc"
+#include "std/initializer_list.inc"
+#include "std/iomanip.inc"
+#include "std/ios.inc"
+#include "std/iosfwd.inc"
+#include "std/iostream.inc"
+#include "std/istream.inc"
+#include "std/latch.inc"
+#include "std/limits.inc"
+#include "std/list.inc"
+#include "std/locale.inc"
+#include "std/map.inc"
+#include "std/mdspan.inc"
+#include "std/memory.inc"
+#include "std/memory_resource.inc"
+#include "std/mutex.inc"
+#include "std/new.inc"
+#include "std/numbers.inc"
+#include "std/numeric.inc"
+#include "std/optional.inc"
+#include "std/ostream.inc"
+#include "std/print.inc"
+#include "std/queue.inc"
+#include "std/random.inc"
 
-    using std::swap;
-    using std::exchange;
-    using std::vector;
-    using std::string;
-    using std::to_string;
-    using std::array;
+#include "std/ratio.inc"
+#include "std/rcu.inc"
+#include "std/regex.inc"
+#include "std/scoped_allocator.inc"
+#include "std/semaphore.inc"
+#include "std/set.inc"
+#include "std/shared_mutex.inc"
+#include "std/source_location.inc"
+#include "std/span.inc"
+#include "std/spanstream.inc"
+#include "std/sstream.inc"
+#include "std/stack.inc"
 
-    using std::function;
-    using std::move_only_function;
-    using std::bind;
+#include "std/stdexcept.inc"
+#include "std/stdfloat.inc"
+#include "std/stop_token.inc"
+#include "std/streambuf.inc"
+#include "std/string.inc"
+#include "std/string_view.inc"
+#include "std/strstream.inc"
+#include "std/syncstream.inc"
+#include "std/system_error.inc"
+#include "std/text_encoding.inc"
+#include "std/thread.inc"
+#include "std/tuple.inc"
+#include "std/type_traits.inc"
+#include "std/typeindex.inc"
+#include "std/typeinfo.inc"
+#include "std/unordered_map.inc"
+#include "std/unordered_set.inc"
+#include "std/utility.inc"
+#include "std/valarray.inc"
+#include "std/variant.inc"
+#include "std/vector.inc"
+#include "std/version.inc"
 
-    using std::list;
+// std compact
+#include "std.compat/cassert.inc"
+#include "std.compat/cctype.inc"
+#include "std.compat/cerrno.inc"
+#include "std.compat/cfenv.inc"
+#include "std.compat/cfloat.inc"
+#include "std.compat/cinttypes.inc"
+#include "std.compat/climits.inc"
+#include "std.compat/clocale.inc"
+#include "std.compat/cmath.inc"
+#include "std.compat/csetjmp.inc"
+#include "std.compat/csignal.inc"
+#include "std.compat/cstdarg.inc"
+#include "std.compat/cstddef.inc"
+#include "std.compat/cstdint.inc"
+#include "std.compat/cstdio.inc"
 
-    using std::deque;
-    using std::queue;
-    using std::priority_queue;
-    using std::stack;
+#include "std.compat/cstring.inc"
 
-    using std::sort;
-    using std::min;
-    using std::max;
-    using std::find;
+#include "std.compat/cuchar.inc"
+#include "std.compat/cwchar.inc"
+#include "std.compat/cwctype.inc"
 
-    using std::hash;
-    using std::unordered_map;
-    using std::unordered_multimap;
-    using std::unordered_set;
-    using std::unordered_multiset;
-    using std::map;
-    using std::multimap;
-    using std::set;
-    using std::multiset;
+// #include "std/stacktrace.inc"
+#include "std/stacktrace_modified.inc"
 
-    using std::begin;
-    using std::end;
-    using std::rbegin;
-    using std::rend;
+// #include "std/concepts.inc"
+#include "std/concepts_modified.inc"
 
-    using std::copy;
-    using std::copy_n;
+//#include "std/iterator.inc"
+#include "std/iterator_modified.inc"
 
-    using std::enable_if_t;
-    using std::is_same_v;
-    using std::is_base_of_v;
-    using std::is_convertible_v;
-    using std::is_integral_v;
-    using std::is_trivial_v;
+//#include "std/ranges.inc"
+#include "std/ranges_modified.inc"
 
-    using std::is_default_constructible_v;
-    using std::is_move_constructible_v;
-    using std::is_copy_constructible_v;
-    using std::is_copy_assignable_v;
-    using std::is_move_assignable_v;
-    using std::is_trivially_copyable_v;
-    using std::is_trivially_copy_constructible_v;
-    using std::is_trivially_copy_assignable_v;
-    using std::is_trivially_move_constructible_v;
-    using std::is_trivially_move_assignable_v;
-    using std::is_trivially_destructible_v;
-    using std::is_nothrow_copy_constructible_v;
-    using std::is_nothrow_copy_assignable_v;
-    using std::is_nothrow_move_constructible_v;
+//#include "std.compat/cstdlib.inc"
+#include "std.compat/cstdlib_modified.inc"
 
-    using std::declval;
+//#include "std/cstdlib.inc"
+#include "std/cstdlib_modified.inc"
 
-    using std::same_as;
-    using std::convertible_to;
-    using std::derived_from;
-    using std::common_reference_with;
-    using std::common_with;
-    using std::integral;
-    using std::signed_integral;
-    using std::unsigned_integral;
+//#include "std.compat/ctime.inc"
+#include "std.compat/ctime_modified.inc"
 
-    using std::invoke_result_t;
-    using std::is_invocable_v;
-    using std::index_sequence;
-    using std::make_index_sequence;
-    using std::index_sequence_for;
+//#include "std/compare.inc"
+#include "std/compare_modified.inc"
 
-    using std::optional;
-    using std::nullopt;
-    using std::nullopt_t;
-    using std::make_optional;
+//#include "std/ctime.inc"
+#include "std/ctime_modified.inc"
 
-    using std::variant;
-    using std::visit;
-
-    using std::any;
-    using std::any_cast;
-
-    using std::exception;
-    using std::runtime_error;
-    using std::logic_error;
-    using std::current_exception;
-    using std::rethrow_exception;
-    using std::exception_ptr;
-
-    using std::string_view;
-
-    using std::expected;
-    using std::unexpected;
-
-    using std::iterator_traits;
-    using std::input_iterator_tag;
-    using std::output_iterator_tag;
-    using std::forward_iterator_tag;
-    using std::bidirectional_iterator_tag;
-    using std::random_access_iterator_tag;
-    using std::input_iterator;
-    using std::output_iterator;
-    using std::forward_iterator;
-    using std::bidirectional_iterator;
-    using std::random_access_iterator;
-
-    using std::iter_swap;
-    using std::advance;
-    using std::distance;
-    using std::next;
-    using std::prev;
-
-    using std::stacktrace;
-
-    using std::source_location;
-
-    using std::integral;
-    using std::signed_integral;
-    using std::unsigned_integral;
-
-    using std::movable;
-    using std::copyable;
-
-    using std::coroutine_handle;
-    using std::coroutine_traits;
-    using std::suspend_always;
-    using std::suspend_never;
-    using std::noop_coroutine;
-
-    using std::format;
-    using std::format_to;
-    using std::format_to_n;
-    using std::formatted_size;
-    using std::format_error;
-    using std::format_parse_context;
-    using std::format_context;
-    using std::format_args;
-    using std::vformat;
-
-    using std::formatter;
-    using std::format_string;
-
-    using std::ifstream;
-    using std::ofstream;
-    using std::fstream;
-    using std::ios_base;
-    using std::ios;
-    using std::streambuf;
-    using std::streampos;
-    using std::streamoff;
-    using std::streamsize;
-
-    using size_t = std::size_t;
-
-    using std::numeric_limits;
-
-    using std::mt19937;
-    using std::uniform_int_distribution;
-    using std::uniform_real_distribution;
-    using std::normal_distribution;
-    using std::bernoulli_distribution;
-
-    using std::random_device;
-    using std::default_random_engine;
-    using std::seed_seq;
-
-    using std::mutex;
-    using std::recursive_mutex;
-    using std::shared_mutex;
-    using std::unique_lock;
-    using std::lock_guard;
-    using std::scoped_lock;
-    using std::condition_variable;
-    using std::condition_variable_any;
-    using std::notify_all_at_thread_exit;
-
-    using std::thread;
-    using std::jthread;
-
-    namespace this_thread {
-        using std::this_thread::get_id;
-        using std::this_thread::yield;
-        using std::this_thread::sleep_for;
-        using std::this_thread::sleep_until;
-    }
-
-    using std::future;
-    using std::promise;
-    using std::packaged_task;
-    using std::async;
-    using std::launch;
-    using std::future_status;
-    using std::future_errc;
-    using std::future_error;
-    using std::future_category;
-
-    using std::atomic;
-    using std::atomic_flag;
-
-    using std::memory_order;
-    using std::memory_order_relaxed;
-    using std::memory_order_acquire;
-    using std::memory_order_release;
-    using std::memory_order_acq_rel;
-    using std::memory_order_seq_cst;
-
-    namespace chrono {
-        using std::chrono::duration;
-        using std::chrono::duration_cast;
-        using std::chrono::time_point;
-        using std::chrono::system_clock;
-        using std::chrono::steady_clock;
-        using std::chrono::high_resolution_clock;
-        using std::chrono::time_point_cast;
-        using std::chrono::time_point;
-        using std::chrono::duration_values;
-
-        using std::chrono::nanoseconds;
-        using std::chrono::microseconds;
-        using std::chrono::milliseconds;
-        using std::chrono::seconds;
-        using std::chrono::minutes;
-        using std::chrono::hours;
-    }
-
-    using std::stringstream;
-}
-
-export using size_t = size_t;
-export using uint8_t = uint8_t;
-export using uint16_t = uint16_t;
-export using uint32_t = uint32_t;
-export using uint64_t = uint64_t;
-export using int8_t = int8_t;
-export using int16_t = int16_t;
-export using int32_t = int32_t;
-export using int64_t = int64_t;
-
-export using nullptr_t = nullptr_t;
+//#include "std/flat_map.inc"
