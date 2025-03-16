@@ -90,10 +90,8 @@ export namespace std {
 
     using std::ranges::borrowed_subrange_t;
 
-#if _LIBCPP_STD_VER >= 23
     // [range.utility.conv], range conversions
     using std::ranges::to;
-#endif
 
     // [range.empty], empty view
     using std::ranges::empty_view;
