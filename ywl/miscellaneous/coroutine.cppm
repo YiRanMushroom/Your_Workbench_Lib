@@ -75,10 +75,6 @@ namespace ywl::miscellaneous::coroutine {
                 awaiter.emplace(std::move(co_await_value));
             }
 
-            constexpr void set_feedback_callback(std::invocable<Feedback_Type> auto &&callback) {
-                feedback_callback = std::forward<decltype(callback)>(callback);
-            }
-
             ~coroutine_generator_promise_type() {
                 if (exception) {
                     auto e = exception;
@@ -155,6 +151,10 @@ namespace ywl::miscellaneous::coroutine {
         constexpr void rethrow_if_has_exception() {
             handle.promise().rethrow_if_has_exception();
         }
+
+        constexpr void set_feedback_callback(std::invocable<Feedback_Type> auto &&callback) {
+            handle->feedback_callback = std::forward<decltype(callback)>(callback);
+        }
     };
 
     template<typename ResultType, typename Feedback_Type>
@@ -214,10 +214,6 @@ namespace ywl::miscellaneous::coroutine {
                     self.feedback_callback(std::forward<decltype(feedback)>(feedback));
                 }
                 return {};
-            }
-
-            constexpr void set_feedback_callback(std::invocable<Feedback_Type> auto &&callback) {
-                feedback_callback = std::forward<decltype(callback)>(callback);
             }
 
             constexpr void set_awaiter() {
@@ -297,6 +293,10 @@ namespace ywl::miscellaneous::coroutine {
 
         constexpr void rethrow_if_has_exception() {
             handle.promise().rethrow_if_has_exception();
+        }
+
+        constexpr void set_feedback_callback(std::invocable<Feedback_Type> auto &&callback) {
+            handle->feedback_callback = std::forward<decltype(callback)>(callback);
         }
     };
 
