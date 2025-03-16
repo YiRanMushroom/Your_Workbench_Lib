@@ -4,17 +4,17 @@ import ywl.std.prelude;
 import ywl.basic.exceptions;
 
 namespace ywl::miscellaneous::coroutine {
-    template<typename ResultType, typename Co_Await_Type>
+    template<typename ResultType, typename Co_Await_Type, typename FeedBack_Type>
     class coroutine_generator_task_impl_t {
     private:
         struct coroutine_generator_promise_type {
-            std::optional <ResultType> result;
-
+            std::optional<ResultType> result;
+            std::optional<FeedBack_Type> feedback;
             std::exception_ptr exception;
 
             constexpr coroutine_generator_task_impl_t get_return_object() {
                 return coroutine_generator_task_impl_t{
-                        std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
+                    std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
                 };
             }
 
@@ -46,7 +46,7 @@ namespace ywl::miscellaneous::coroutine {
                     return false;
                 }
 
-                constexpr void await_suspend(std::coroutine_handle <coroutine_generator_promise_type>) {
+                constexpr void await_suspend(std::coroutine_handle<coroutine_generator_promise_type>) {
                     // do nothing
                 }
 
@@ -58,18 +58,23 @@ namespace ywl::miscellaneous::coroutine {
                 }
             };
 
-            std::optional <Awaiter> awaiter;
+            std::optional<Awaiter> awaiter;
 
         public:
-            constexpr Awaiter await_transform(nullptr_t) {
+            constexpr Awaiter await_transform(std::convertible_to<FeedBack_Type> auto &&feed_back) {
                 if (!awaiter) {
                     throw ywl::basic::ywl_impl_error{"Implementation error in ywl: coroutine_generator_task_impl_t"};
                 }
+                feed_back = std::optional<FeedBack_Type>{std::move(feed_back)};
                 return std::exchange(awaiter, std::nullopt).value();
             }
 
             constexpr void set_awaiter(Co_Await_Type co_await_value) {
                 awaiter.emplace(std::move(co_await_value));
+            }
+
+            constexpr std::optional<FeedBack_Type> get_feedback() {
+                return std::exchange(feedback, std::nullopt);
             }
 
             ~coroutine_generator_promise_type() {
@@ -103,7 +108,7 @@ namespace ywl::miscellaneous::coroutine {
         constexpr coroutine_generator_task_impl_t(const coroutine_generator_task_impl_t &) = delete;
 
         constexpr coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&other) noexcept
-                : handle{std::exchange(other.handle, nullptr)} {
+            : handle{std::exchange(other.handle, nullptr)} {
         }
 
         constexpr coroutine_generator_task_impl_t &operator=(const coroutine_generator_task_impl_t &) = delete;
@@ -128,7 +133,7 @@ namespace ywl::miscellaneous::coroutine {
             }
         }
 
-        constexpr std::optional <ResultType> yield_optional(Co_Await_Type co_await_value) {
+        constexpr std::optional<ResultType> yield_optional(Co_Await_Type co_await_value) {
             handle.promise().set_awaiter(std::move(co_await_value));
             while (!handle.done()) {
                 handle.promise().rethrow_if_has_exception();
@@ -150,17 +155,17 @@ namespace ywl::miscellaneous::coroutine {
         }
     };
 
-    template<typename ResultType>
-    class coroutine_generator_task_impl_t<ResultType, void> {
+    template<typename ResultType, typename Feedback_Type>
+    class coroutine_generator_task_impl_t<ResultType, void, Feedback_Type> {
     private:
         struct coroutine_generator_promise_type {
-            std::optional <ResultType> result;
-
+            std::optional<ResultType> result;
             std::exception_ptr exception;
+            std::optional<Feedback_Type> feedback;
 
             constexpr coroutine_generator_task_impl_t get_return_object() {
                 return coroutine_generator_task_impl_t{
-                        std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
+                    std::coroutine_handle<coroutine_generator_promise_type>::from_promise(*this)
                 };
             }
 
@@ -190,7 +195,7 @@ namespace ywl::miscellaneous::coroutine {
                     return false;
                 }
 
-                constexpr void await_suspend(std::coroutine_handle <coroutine_generator_promise_type>) {
+                constexpr void await_suspend(std::coroutine_handle<coroutine_generator_promise_type>) {
                     // do nothing
                 }
 
@@ -202,8 +207,13 @@ namespace ywl::miscellaneous::coroutine {
             };
 
         public:
-            constexpr Awaiter await_transform(nullptr_t) {
+            constexpr Awaiter await_transform(std::convertible_to<Feedback_Type> auto &&feed_back) {
+                feed_back = std::optional<Feedback_Type>{std::move(feed_back)};
                 return {};
+            }
+
+            constexpr std::optional<Feedback_Type> get_feedback() {
+                return std::exchange(feedback, std::nullopt);
             }
 
             constexpr void set_awaiter() {
@@ -242,7 +252,7 @@ namespace ywl::miscellaneous::coroutine {
         constexpr coroutine_generator_task_impl_t &operator=(const coroutine_generator_task_impl_t &) = delete;
 
         constexpr coroutine_generator_task_impl_t(coroutine_generator_task_impl_t &&other) noexcept
-                : handle{std::exchange(other.handle, nullptr)} {
+            : handle{std::exchange(other.handle, nullptr)} {
         }
 
         constexpr coroutine_generator_task_impl_t &operator=(coroutine_generator_task_impl_t &&other) noexcept {
@@ -265,7 +275,7 @@ namespace ywl::miscellaneous::coroutine {
             }
         }
 
-        constexpr std::optional <ResultType> yield_optional() {
+        constexpr std::optional<ResultType> yield_optional() {
             while (!handle.done()) {
                 handle.promise().rethrow_if_has_exception();
                 handle.resume();
@@ -286,19 +296,19 @@ namespace ywl::miscellaneous::coroutine {
         }
     };
 
-    template<typename Function_Type>
+    template<typename Function_Type, typename Feedback_Type = nullptr_t>
     struct generator_task_impl {
         static_assert(false, "template parameter of generator_task must be a function type");
     };
 
-    template<typename ResultType, typename Arg>
-    struct generator_task_impl<ResultType(Arg)> {
-        using type = coroutine_generator_task_impl_t<ResultType, Arg>;
+    template<typename ResultType, typename Arg, typename Feedback_Type>
+    struct generator_task_impl<ResultType(Arg), Feedback_Type> {
+        using type = coroutine_generator_task_impl_t<ResultType, Arg, Feedback_Type>;
     };
 
-    template<typename ResultType>
-    struct generator_task_impl<ResultType()> {
-        using type = coroutine_generator_task_impl_t<ResultType, void>;
+    template<typename ResultType, typename Feedback_Type>
+    struct generator_task_impl<ResultType(), Feedback_Type> {
+        using type = coroutine_generator_task_impl_t<ResultType, void, Feedback_Type>;
     };
 
     export template<typename Function_Type>
