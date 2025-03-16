@@ -4,12 +4,12 @@ module;
 #define _LIBCPP_HAS_ATOMIC_HEADER 1
 #define _LIBCPP_HAS_RANDOM_DEVICE 1
 
-// if _LIBCPP_STD_VER >= 23
-// #if _LIBCPP_STD_VER >= 23
+// if c++ 23 standard
+#if __cplusplus >= 202302L
 #define _LIBCPP_STD_VER 23
-// #else
-// #define _LIBCPP_STD_VER 20
-// #endif
+#else
+#define _LIBCPP_STD_VER 20
+#endif
 
 // The headers of Table 24: C++ library headers [tab:headers.cpp]
 // and the headers of Table 25: C++ headers for C library facilities [tab:headers.cpp.c]
