@@ -5,11 +5,11 @@ module;
 #define _LIBCPP_HAS_RANDOM_DEVICE 1
 
 // if _LIBCPP_STD_VER >= 23
-#if _LIBCPP_STD_VER >= 23
+// #if _LIBCPP_STD_VER >= 23
 #define _LIBCPP_STD_VER 23
-#else
-#define _LIBCPP_STD_VER 20
-#endif
+// #else
+// #define _LIBCPP_STD_VER 20
+// #endif
 
 // The headers of Table 24: C++ library headers [tab:headers.cpp]
 // and the headers of Table 25: C++ headers for C library facilities [tab:headers.cpp.c]
@@ -234,7 +234,6 @@ export module ywl.std.prelude;
 #include "std/expected.inc"
 #include "std/filesystem.inc"
 #include "std/flat_set.inc"
-#include "std/format.inc"
 #include "std/forward_list.inc"
 #include "std/fstream.inc"
 #include "std/functional.inc"
@@ -290,7 +289,6 @@ export module ywl.std.prelude;
 #include "std/text_encoding.inc"
 #include "std/thread.inc"
 #include "std/tuple.inc"
-#include "std/type_traits.inc"
 #include "std/typeindex.inc"
 #include "std/typeinfo.inc"
 #include "std/unordered_map.inc"
@@ -350,5 +348,11 @@ export module ywl.std.prelude;
 
 //#include "std/ctime.inc"
 #include "std/ctime_modified.inc"
+
+// #include "std/format.inc"
+#include "std/format_modified.inc"
+
+// #include "std/type_traits.inc"
+#include "std/type_traits_modified.inc"
 
 //#include "std/flat_map.inc"
