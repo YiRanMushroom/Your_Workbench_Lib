@@ -5,7 +5,6 @@ module;
 #include <vector>
 #include <string>
 #include <array>
-#include <memory>
 #include <functional>
 #include <list>
 
@@ -59,6 +58,8 @@ module;
 
 export module ywl.std.prelude;
 
+export import ywl.std.memory;
+
 export namespace std {
     using std::move;
     using std::forward;
@@ -76,12 +77,6 @@ export namespace std {
     using std::string;
     using std::to_string;
     using std::array;
-
-    using std::unique_ptr;
-    using std::make_unique;
-    using std::shared_ptr;
-    using std::make_shared;
-    using std::weak_ptr;
 
     using std::function;
     using std::move_only_function;
