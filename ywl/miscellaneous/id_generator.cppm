@@ -1,8 +1,8 @@
 module;
 
-import ywl.std.prelude;
-
 export module ywl.miscellaneous.id_generator;
+
+import ywl.std.prelude;
 
 namespace ywl::miscellaneous {
     export template<typename T = uint64_t, T default_value = T{}> requires requires(T t) { ++t; std::numeric_limits<T>::max(); }

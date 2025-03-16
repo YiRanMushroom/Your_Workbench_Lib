@@ -1,12 +1,8 @@
 module;
 
-// #define _SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS
-// #include <random>
-
-import ywl.std.prelude;
-
 export module ywl.miscellaneous.random;
 
+import ywl.std.prelude;
 
 namespace ywl::miscellaneous {
     namespace ns_random::impl {

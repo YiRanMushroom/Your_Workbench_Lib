@@ -1,8 +1,8 @@
 module;
 
-import ywl.std.prelude;
-
 export module ywl.basic.string_literal;
+
+import ywl.std.prelude;
 
 namespace ywl::basic {
     export template<size_t N>

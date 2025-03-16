@@ -5,6 +5,5 @@
 export module ywl.util;
 
 export import ywl.util.logger;
-
 export import ywl.util.impl;
 

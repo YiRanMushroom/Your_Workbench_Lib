@@ -1,10 +1,9 @@
 module;
 
-import ywl.std.prelude;
-
 export module ywl.util.logger;
 
 import ywl.basic.string_literal;
+import ywl.std.prelude;
 
 namespace ywl::util {
     export class logger {

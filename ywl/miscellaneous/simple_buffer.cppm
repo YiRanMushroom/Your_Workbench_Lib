@@ -2,10 +2,9 @@ module;
 
 #include <cassert>
 
-import ywl.std.prelude;
-
 export module ywl.miscellaneous.simple_buffer;
 
+import ywl.std.prelude;
 import ywl.basic.helpers;
 
 namespace ywl::miscellaneous {

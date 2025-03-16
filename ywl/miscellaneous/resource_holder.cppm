@@ -1,9 +1,8 @@
 module;
 
-import ywl.std.prelude;
-
 export module ywl.miscellaneous.resource_holder;
 
+import ywl.std.prelude;
 import ywl.basic.exceptions;
 import ywl.basic.helpers;
 

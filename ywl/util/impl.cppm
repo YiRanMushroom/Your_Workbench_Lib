@@ -1,8 +1,8 @@
 module;
 
-import ywl.std.prelude;
-
 export module ywl.util.impl;
+
+import ywl.std.prelude;
 
 namespace ywl::util {
     export constexpr std::optional<std::string> get_istream_input(auto &is) {
