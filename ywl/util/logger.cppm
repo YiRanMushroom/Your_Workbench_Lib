@@ -1,7 +1,5 @@
 module;
 
-#include <iostream>
-
 import ywl.std.prelude;
 
 export module ywl.util.logger;
