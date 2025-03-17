@@ -12,7 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
 
-add_library(${PROJECT_NAME} ${MODULES})
+add_library(${PROJECT_NAME} ${MODULES}
+        ywl/miscellaneous/multi_threading/thread_safe_queue.cppm)
 
 target_sources(${PROJECT_NAME}
         PUBLIC

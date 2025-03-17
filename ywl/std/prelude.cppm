@@ -3,6 +3,7 @@ module;
 #define _LIBCPP_HAS_LOCALIZATION 1
 #define _LIBCPP_HAS_ATOMIC_HEADER 1
 #define _LIBCPP_HAS_RANDOM_DEVICE 1
+#define _LIBCPP_HAS_THREADS 1
 
 // if c++ 23 standard
 #if __cplusplus >= 202302L
