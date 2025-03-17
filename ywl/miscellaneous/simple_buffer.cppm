@@ -12,8 +12,7 @@ namespace ywl::miscellaneous {
     struct buffer_impl_t;
 
     export template<typename T>
-    concept bufferable = requires(std::vector<unsigned char> &container, const T &val)
-    {
+    concept bufferable = requires(std::vector<unsigned char> &container, const T &val) {
         { buffer_impl_t<T>::read_from(container) } -> std::same_as<T>;
         { buffer_impl_t<T>::write_to(val, container) };
     };
@@ -74,13 +73,13 @@ namespace ywl::miscellaneous {
             container.resize(container.size() + sizeof(T));
             // std::memcpy(container.data() + container.size() - sizeof(T), &val, sizeof(T));
             std::copy_n(reinterpret_cast<const unsigned char *>(&val),
-                      sizeof(T),
-                      container.data() + container.size() - sizeof(T));
+                        sizeof(T),
+                        container.data() + container.size() - sizeof(T));
         }
     };
 
     export template<bufferable T1, bufferable T2>
-    struct buffer_impl_t<std::pair<T1, T2> > {
+    struct buffer_impl_t<std::pair<T1, T2>> {
         constexpr static std::pair<T1, T2> read_from(std::vector<unsigned char> &container) {
             return {buffer_impl_t<T1>::read_from(container), buffer_impl_t<T2>::read_from(container)};
         }
@@ -91,7 +90,7 @@ namespace ywl::miscellaneous {
     };
 
     export template<bufferable... Ts>
-    struct buffer_impl_t<std::tuple<Ts...> > {
+    struct buffer_impl_t<std::tuple<Ts...>> {
         using index_sequence = ywl::basic::index_sequence_t<sizeof...(Ts)>;
         using reverse_index_sequence = ywl::basic::reverse_index_sequence_t<sizeof...(Ts)>;
 
@@ -102,19 +101,20 @@ namespace ywl::miscellaneous {
         }
 
         constexpr static void write_to(const std::tuple<Ts...> &val, std::vector<unsigned char> &container) {
-            [&]<size_t... Is>(std::index_sequence<Is...> seq) {
-                (buffer_impl_t<Ts>::write_to(std::get<Is>(val), container), ...);
+            [&]<size_t... Is>(std::index_sequence<Is...>) {;
+                (buffer_impl_t<std::tuple_element_t<Is, std::tuple<Ts...>>>::write_to(std::get<Is>(val), container), ...
+                );
             }(reverse_index_sequence{});
         }
     };
 
     export template<bufferable K, bufferable V>
-    struct buffer_impl_t<std::unordered_map<K, V> > {
+    struct buffer_impl_t<std::unordered_map<K, V>> {
         constexpr static std::unordered_map<K, V> read_from(std::vector<unsigned char> &container) {
             std::unordered_map<K, V> val;
             size_t size = buffer_impl_t<size_t>::read_from(container);
             for (size_t i = 0; i < size; ++i) {
-                auto entry = buffer_impl_t<std::pair<K, V> >::read_from(container);
+                auto entry = buffer_impl_t<std::pair<K, V>>::read_from(container);
                 val.insert(std::move(entry));
             }
             return val;
@@ -122,14 +122,14 @@ namespace ywl::miscellaneous {
 
         constexpr static void write_to(const std::unordered_map<K, V> &val, std::vector<unsigned char> &container) {
             for (const auto &entry: val) {
-                buffer_impl_t<std::pair<K, V> >::write_to(entry, container);
+                buffer_impl_t<std::pair<K, V>>::write_to(entry, container);
             }
             buffer_impl_t<size_t>::write_to(val.size(), container);
         }
     };
 
     export template<bufferable K, bufferable V>
-    struct buffer_impl_t<std::map<K, V> > {
+    struct buffer_impl_t<std::map<K, V>> {
         constexpr static std::map<K, V> read_from(std::vector<unsigned char> &container) {
             std::map<K, V> val;
             size_t size = buffer_impl_t<size_t>::read_from(container);
@@ -151,14 +151,13 @@ namespace ywl::miscellaneous {
     };
 
     export template<bufferable T, template<typename...> typename Container>
-        requires requires(Container<T> container)
-        {
+        requires requires(Container<T> container) {
             { container.size() } -> std::convertible_to<size_t>;
             { container.push_back(std::declval<T>()) };
             std::rbegin(container);
             std::rend(container);
         }
-    struct buffer_impl_t<Container<T> > {
+    struct buffer_impl_t<Container<T>> {
         constexpr static Container<T> read_from(std::vector<unsigned char> &container) {
             size_t size = buffer_impl_t<size_t>::read_from(container);
             Container<T> val;
