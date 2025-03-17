@@ -6,6 +6,7 @@ export module ywl.miscellaneous.simple_buffer;
 
 import ywl.std.prelude;
 import ywl.basic.helpers;
+import ywl.util.logger;
 
 namespace ywl::miscellaneous {
     export template<typename>
@@ -96,14 +97,15 @@ namespace ywl::miscellaneous {
 
         constexpr static std::tuple<Ts...> read_from(std::vector<unsigned char> &container) {
             return [&]<size_t... Is>(std::index_sequence<Is...>) {
-                return std::make_tuple(buffer_impl_t<Ts>::read_from(container)...);
+                std::tuple<Ts...> val{buffer_impl_t<Ts>::read_from(container)...};
+                return val;
             }(index_sequence{});
         }
 
         constexpr static void write_to(const std::tuple<Ts...> &val, std::vector<unsigned char> &container) {
-            [&]<size_t... Is>(std::index_sequence<Is...>) {;
-                (buffer_impl_t<std::tuple_element_t<Is, std::tuple<Ts...>>>::write_to(std::get<Is>(val), container), ...
-                );
+            [&]<size_t... Is>(std::index_sequence<Is...>) {
+                (buffer_impl_t<std::tuple_element_t<Is, std::tuple<Ts...>>>::write_to(std::get<Is>(val),
+                    container), ...);
             }(reverse_index_sequence{});
         }
     };
