@@ -32,7 +32,7 @@ namespace ywl::miscellaneous::multi_threading {
 
     private:
         queue_type m_queue{};
-        std::mutex m_mutex{};
+        std::recursive_mutex m_mutex{};
 
     public:
         thread_safe_queue() = default;
@@ -88,7 +88,7 @@ namespace ywl::miscellaneous::multi_threading {
             return m_queue.size();
         }
 
-        std::mutex &get_mutex() {
+        std::recursive_mutex &get_mutex() {
             return m_mutex;
         }
 

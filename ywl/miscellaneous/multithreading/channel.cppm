@@ -67,15 +67,13 @@ namespace ywl::miscellaneous::multi_threading {
         std::shared_ptr <std::condition_variable> m_cv;
 
     public:
-        std::optional <value_type> receive_weak() const {
+        [[nodiscard]] std::optional <value_type> receive_weak() const {
             return m_queue->pop();
         }
 
-        std::optional <value_type> receive_strong() const {
-            {
-                std::unique_lock lock{m_queue->get_mutex()};
-                m_cv->wait(lock, [&] { return !m_queue->empty_approx(); });
-            }
+        [[nodiscard]] std::optional <value_type> receive_strong() const {
+            std::unique_lock lock{m_queue->get_mutex()};
+            m_cv->wait(lock, [&] { return !m_queue->empty_approx(); });
             return m_queue->pop();
         }
 
