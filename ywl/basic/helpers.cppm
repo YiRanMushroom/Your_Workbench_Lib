@@ -37,7 +37,7 @@ namespace ywl::basic {
 
     template<size_t N, size_t... Is>
     struct make_reverse_index_sequence_impl :
-            make_reverse_index_sequence_impl<N - 1, N - 1, Is...> {
+            make_reverse_index_sequence_impl<N - 1, Is..., N - 1> {
     };
 
     template<size_t... Is>
