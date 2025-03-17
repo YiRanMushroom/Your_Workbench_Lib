@@ -44,7 +44,7 @@ namespace ywl::miscellaneous::multi_threading {
             }
 
             if (auto cv = m_cv.lock()) {
-                cv->notify_all();
+                cv->notify_one();
             } else {
                 throw channel_closed_exception{"Channel is closed"};
             }
