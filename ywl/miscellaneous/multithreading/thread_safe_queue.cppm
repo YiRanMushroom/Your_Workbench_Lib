@@ -87,5 +87,13 @@ namespace ywl::miscellaneous::multi_threading {
             std::scoped_lock lock{m_mutex};
             return m_queue.size();
         }
+
+        std::mutex& get_mutex() {
+            return m_mutex;
+        }
+
+        queue_type& get_queue() {
+            return m_queue;
+        }
     };
 }

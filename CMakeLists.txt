@@ -13,7 +13,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
 
 add_library(${PROJECT_NAME} ${MODULES}
-        ywl/miscellaneous/multithreading/multithreading.ixx)
+        ywl/miscellaneous/multithreading/multithreading.ixx
+        ywl/miscellaneous/multithreading/channel.cppm)
 
 target_sources(${PROJECT_NAME}
         PUBLIC
