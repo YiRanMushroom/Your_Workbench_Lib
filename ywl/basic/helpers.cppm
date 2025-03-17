@@ -188,4 +188,10 @@ namespace ywl::basic {
 
     export template<typename... Types>
     using unique_variant_t = unique_variant_from_tuple_t<std::tuple<Types...>>;
+
+    export template<typename... Fns>
+    struct overload_fns : public Fns... {
+        overload_fns(const Fns &...) {
+        }
+    };
 }
