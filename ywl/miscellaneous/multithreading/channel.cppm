@@ -82,17 +82,17 @@ namespace ywl::miscellaneous::multi_threading {
         }
     };
 
-    template<typename T>
+    export template<typename T>
     auto make_simple_mpsc_channel() {
         auto queue = std::make_shared < thread_safe_queue < std::queue < T>>>();
         auto cv = std::make_shared<std::condition_variable>();
-        return std::make_pair(mpmc_receiver{queue, cv}, mpmc_sender{queue});
+        return std::make_pair(mpmc_sender{std::weak_ptr{queue}}, mpmc_receiver{queue, cv});
     }
 
-    template<typename TSQueue>
+    export template<typename TSQueue>
     auto make_mpmc_channel() {
         auto queue = std::make_shared<TSQueue>();
         auto cv = std::make_shared<std::condition_variable>();
-        return std::make_pair(mpmc_receiver{queue, cv}, mpmc_sender{queue});
+        return std::make_pair(mpmc_sender{std::weak_ptr{queue}}, mpmc_receiver{queue, cv});
     }
 }
