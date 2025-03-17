@@ -97,8 +97,7 @@ namespace ywl::miscellaneous {
 
         constexpr static std::tuple<Ts...> read_from(std::vector<unsigned char> &container) {
             return [&]<size_t... Is>(std::index_sequence<Is...>) {
-                std::tuple<Ts...> val{buffer_impl_t<Ts>::read_from(container)...};
-                return val;
+                return {buffer_impl_t<Ts>::read_from(container)...};
             }(index_sequence{});
         }
 
