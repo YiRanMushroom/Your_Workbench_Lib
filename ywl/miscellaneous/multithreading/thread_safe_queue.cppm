@@ -35,22 +35,22 @@ namespace ywl::miscellaneous::multi_threading {
         std::recursive_mutex m_mutex{};
 
     public:
-        thread_safe_queue() = default;
+        constexpr thread_safe_queue() = default;
 
-        thread_safe_queue(const thread_safe_queue &) = delete;
+        constexpr thread_safe_queue(const thread_safe_queue &) = delete;
 
-        thread_safe_queue(thread_safe_queue &&) = delete;
+        constexpr thread_safe_queue(thread_safe_queue &&) = delete;
 
-        thread_safe_queue &operator=(const thread_safe_queue &) = delete;
+        constexpr thread_safe_queue &operator=(const thread_safe_queue &) = delete;
 
-        thread_safe_queue &operator=(thread_safe_queue &&) = delete;
+        constexpr thread_safe_queue &operator=(thread_safe_queue &&) = delete;
 
-        void emplace(auto &&... args) {
+        constexpr void emplace(auto &&... args) {
             std::scoped_lock lock{m_mutex};
             m_queue.emplace(std::forward<decltype(args)>(args)...);
         }
 
-        std::optional <value_type> pop() {
+        constexpr std::optional <value_type> pop() {
             std::scoped_lock lock{m_mutex};
             if (m_queue.empty()) {
                 return std::nullopt;
@@ -73,26 +73,26 @@ namespace ywl::miscellaneous::multi_threading {
             return value;
         }
 
-        void push(value_type value) {
+        constexpr void push(value_type value) {
             std::scoped_lock lock{m_mutex};
             m_queue.emplace(std::move(value));
         }
 
-        [[nodiscard]] bool empty_approx() {
+        [[nodiscard]] constexpr bool empty_approx() {
             std::scoped_lock lock{m_mutex};
             return m_queue.empty();
         }
 
-        [[nodiscard]] size_t size_approx() {
+        [[nodiscard]] constexpr size_t size_approx() {
             std::scoped_lock lock{m_mutex};
             return m_queue.size();
         }
 
-        std::recursive_mutex &get_mutex() {
+        constexpr std::recursive_mutex &get_mutex() {
             return m_mutex;
         }
 
-        queue_type &get_queue() {
+        constexpr queue_type &get_queue() {
             return m_queue;
         }
     };
