@@ -2,6 +2,7 @@ export module ywl.miscellaneous.coroutine;
 
 import ywl.std.prelude;
 import ywl.basic.exceptions;
+import ywl.basic.helpers;
 
 namespace ywl::miscellaneous::coroutine {
     template<typename ResultType, typename Co_Await_Type, typename Feedback_Type>
@@ -61,7 +62,8 @@ namespace ywl::miscellaneous::coroutine {
             std::optional<Awaiter> awaiter;
 
         public:
-            constexpr Awaiter await_transform(this coroutine_generator_promise_type& self, std::convertible_to<Feedback_Type> auto &&feedback) {
+            constexpr Awaiter await_transform(this coroutine_generator_promise_type &self,
+                                              std::convertible_to<Feedback_Type> auto &&feedback) {
                 if (!self.awaiter) {
                     throw ywl::basic::ywl_impl_error{"Implementation error in ywl: coroutine_generator_task_impl_t"};
                 }
@@ -152,7 +154,7 @@ namespace ywl::miscellaneous::coroutine {
             handle.promise().rethrow_if_has_exception();
         }
 
-        constexpr void set_feedback_callback(std::invocable<Feedback_Type> auto &&callback) {
+        constexpr void set_feedback_callback(ywl::basic::function_like<void(Feedback_Type)> auto &&callback) {
             handle.promise().feedback_callback = std::forward<decltype(callback)>(callback);
         }
     };
@@ -209,7 +211,8 @@ namespace ywl::miscellaneous::coroutine {
             };
 
         public:
-            constexpr Awaiter await_transform(this coroutine_generator_promise_type& self, std::convertible_to<Feedback_Type> auto &&feedback) {
+            constexpr Awaiter await_transform(this coroutine_generator_promise_type &self,
+                                              std::convertible_to<Feedback_Type> auto &&feedback) {
                 if (self.feedback_callback) {
                     self.feedback_callback(std::forward<decltype(feedback)>(feedback));
                 }
@@ -295,7 +298,7 @@ namespace ywl::miscellaneous::coroutine {
             handle.promise().rethrow_if_has_exception();
         }
 
-        constexpr void set_feedback_callback(std::invocable<Feedback_Type> auto &&callback) {
+        constexpr void set_feedback_callback(ywl::basic::function_like<void(Feedback_Type)> auto &&callback) {
             handle.promise().feedback_callback = std::forward<decltype(callback)>(callback);
         }
     };
