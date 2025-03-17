@@ -13,15 +13,18 @@ namespace ywl::miscellaneous::multi_threading {
         { queue.size() } -> std::same_as<size_t>;
         { queue.empty() } -> std::same_as<bool>;
 
-        requires requires{
-            { queue.front() } -> std::same_as<typename Queue_Type::value_type>;
-        } || requires{
-            { queue.top() } -> std::same_as<typename Queue_Type::value_type>;
-        };
+        [] -> bool {
+            if constexpr (requires {{ queue.front() } -> std::same_as<typename Queue_Type::value_type>; }) {
+                return true;
+            } else if constexpr (requires {{ queue.top() } -> std::same_as<typename Queue_Type::value_type>; }) {
+                return true;
+            }
+            return false;
+        }() == true;
     };
 
     export template<is_queue Queue_Type>
-    // this should support queue and priority_queue
+// this should support queue and priority_queue
     class thread_safe_queue {
     public:
         using queue_type = Queue_Type;
@@ -63,7 +66,7 @@ namespace ywl::miscellaneous::multi_threading {
                             "Implementation error in ywl::miscellaneous::multithreading::thread_safe_queue, "
                             "this should never reach."};
                 }
-            };
+            }();
 
             m_queue.pop();
 
