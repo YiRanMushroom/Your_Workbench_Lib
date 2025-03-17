@@ -130,11 +130,23 @@ namespace ywl::basic {
         using type = std::tuple<>;
     };
 
+    template<typename Last>
+    struct unique_tuple_impl<Last> {
+        using type = std::tuple<Last>;
+    };
+
     template<typename First, typename... Rest>
     struct unique_tuple_impl<First, Rest...> {
-        using type = std::conditional_t<type_in_tuple_v<First, std::tuple<Rest...>>,
+        using type = std::conditional_t<
+            type_in_tuple_v<First, std::tuple<Rest...>>,
             typename unique_tuple_impl<Rest...>::type,
-            std::tuple<First, typename unique_tuple_impl<Rest...>::type>>;
+            decltype(
+                std::tuple_cat(
+                    std::tuple<First>{},
+                    std::declval<typename unique_tuple_impl<Rest...>::type>()
+                )
+            )
+        >;
     };
 
     template<typename... Types>
@@ -187,7 +199,7 @@ namespace ywl::basic {
     using unique_variant_from_tuple_t = typename unique_variant_from_tuple<std::tuple<Types...>>::type;
 
     export template<typename... Types>
-    using unique_variant_t = unique_variant_from_tuple_t<std::tuple<Types...>>;
+    using unique_variant_t = unique_variant_impl_t<Types...>;
 
     export template<typename... Fns>
     struct overload_fns : public Fns... {
