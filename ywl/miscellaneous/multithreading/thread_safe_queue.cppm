@@ -1,4 +1,4 @@
-export module ywl.miscellaneous.multi_threading.thread_safe_queue;
+export module ywl.miscellaneous.multithreading.thread_safe_queue;
 
 import ywl.std.prelude;
 import ywl.basic.exceptions;
@@ -60,7 +60,7 @@ namespace ywl::miscellaneous::multi_threading {
                     return std::move(m_queue.front());
                 } else {
                     throw ywl::basic::ywl_impl_error{
-                            "Implementation error in ywl::miscellaneous::multi_threading::thread_safe_queue, "
+                            "Implementation error in ywl::miscellaneous::multithreading::thread_safe_queue, "
                             "this should never reach."};
                 }
             };
