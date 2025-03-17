@@ -8,7 +8,7 @@ namespace ywl::miscellaneous::multi_threading {
     concept is_queue = requires(Queue_Type queue) {
         typename Queue_Type::value_type;
 
-        { queue.emplace(std::declval<typename Queue_Type::value_type>()) } -> std::same_as<void>;
+        queue.emplace(std::declval<typename Queue_Type::value_type>()); // it is possible to be non-void
         { queue.pop() } -> std::same_as<void>;
         { queue.size() } -> std::same_as<size_t>;
         { queue.empty() } -> std::same_as<bool>;
