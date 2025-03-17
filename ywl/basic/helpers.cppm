@@ -50,4 +50,26 @@ namespace ywl::basic {
 
     export template<size_t N>
     using index_sequence_t = std::make_index_sequence<N>;
+
+    template<typename Tp, typename T>
+    constexpr bool function_like_impl_v = false;
+
+    template<typename Tp, typename Ret_T, typename ...Args_T>
+    constexpr bool function_like_impl_v<Tp, Ret_T(Args_T...)> = requires(Tp t, Args_T... args) {
+        { t(std::forward<Args_T>(args)...) } -> std::convertible_to<Ret_T>;
+    };
+
+    export template<typename Tp, typename T>
+    concept function_like = function_like_impl_v<Tp, T>;
+
+    template<typename Tp, typename T>
+    constexpr bool function_same_as_impl_v = false;
+
+    template<typename Tp, typename Ret_T, typename ...Args_T>
+    constexpr bool function_same_as_impl_v<Tp, Ret_T(Args_T...)> = requires(Tp t, Args_T... args) {
+        { t(std::forward<Args_T>(args)...) } -> std::same_as<Ret_T>;
+    };
+
+    export template<typename Tp, typename T>
+    concept function_same_as = function_same_as_impl_v<Tp, T>;
 }
