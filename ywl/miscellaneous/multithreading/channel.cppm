@@ -80,7 +80,7 @@ namespace ywl::miscellaneous::multi_threading {
 
         [[nodiscard]] std::optional <value_type> receive_strong() const {
             std::unique_lock lock{m_queue->get_mutex()};
-            m_cv->wait(lock, [&] { return !m_queue->empty_approx(); });
+            m_cv->wait_for(lock, std::chrono::milliseconds{100}, [&] { return !m_queue->empty_approx(); });
             return m_queue->pop();
         }
 
