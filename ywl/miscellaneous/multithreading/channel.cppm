@@ -58,13 +58,13 @@ namespace ywl::miscellaneous::multi_threading {
         using value_type = typename TSQueue::value_type;
         using queue_type = TSQueue;
 
-        mpmc_receiver(std::shared_ptr <queue_type> queue, std::shared_ptr <std::condition_variable> cv)
+        mpmc_receiver(std::shared_ptr <queue_type> queue, std::shared_ptr <std::condition_variable_any> cv)
                 : m_queue{std::move(queue)}, m_cv{std::move(cv)} {
         }
 
     private:
         std::shared_ptr <queue_type> m_queue;
-        std::shared_ptr <std::condition_variable> m_cv;
+        std::shared_ptr <std::condition_variable_any> m_cv;
 
     public:
         [[nodiscard]] std::optional <value_type> receive_weak() const {
@@ -85,14 +85,14 @@ namespace ywl::miscellaneous::multi_threading {
     export template<typename T>
     auto make_simple_mpmc_channel() {
         auto queue = std::make_shared < thread_safe_queue < std::queue < T>>>();
-        auto cv = std::make_shared<std::condition_variable>();
+        auto cv = std::make_shared<std::condition_variable_any>();
         return std::make_pair(mpmc_sender{std::weak_ptr{queue}}, mpmc_receiver{queue, cv});
     }
 
     export template<typename TSQueue>
     auto make_mpmc_channel() {
         auto queue = std::make_shared<TSQueue>();
-        auto cv = std::make_shared<std::condition_variable>();
+        auto cv = std::make_shared<std::condition_variable_any>();
         return std::make_pair(mpmc_sender{std::weak_ptr{queue}}, mpmc_receiver{queue, cv});
     }
 }
