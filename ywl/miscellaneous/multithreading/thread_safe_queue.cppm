@@ -78,21 +78,21 @@ namespace ywl::miscellaneous::multi_threading {
             m_queue.emplace(std::move(value));
         }
 
-        [[nodiscard]] bool empty_approx() const {
+        [[nodiscard]] bool empty_approx() {
             std::scoped_lock lock{m_mutex};
             return m_queue.empty();
         }
 
-        [[nodiscard]] size_t size_approx() const {
+        [[nodiscard]] size_t size_approx() {
             std::scoped_lock lock{m_mutex};
             return m_queue.size();
         }
 
-        std::mutex& get_mutex() {
+        std::mutex &get_mutex() {
             return m_mutex;
         }
 
-        queue_type& get_queue() {
+        queue_type &get_queue() {
             return m_queue;
         }
     };
