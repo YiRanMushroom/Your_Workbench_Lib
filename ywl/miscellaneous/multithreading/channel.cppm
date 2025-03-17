@@ -32,18 +32,16 @@ namespace ywl::miscellaneous::multi_threading {
         using value_type = typename TSQueue::value_type;
         using queue_type = TSQueue;
 
-        mpmc_sender(std::weak_ptr <queue_type> queue) : m_queue{std::move(queue)} {
-
+        mpmc_sender(std::weak_ptr <queue_type> queue, std::weak_ptr <std::condition_variable_any> cv)
+                : m_queue{std::move(queue)}, m_cv{std::move(cv)} {
         }
 
         void send(auto &&... args) const {
-            if (auto queue = m_queue.lock()) {
-                queue->emplace(std::forward<decltype(args)>(args)...);
-            } else {
-                throw channel_closed_exception{"Channel is closed"};
-            }
+            auto queue = m_queue.lock();
+            auto cv = m_cv.lock();
 
-            if (auto cv = m_cv.lock()) {
+            if (queue && cv) {
+                queue->emplace(std::forward<decltype(args)>(args)...);
                 cv->notify_one();
             } else {
                 throw channel_closed_exception{"Channel is closed"};
@@ -80,12 +78,12 @@ namespace ywl::miscellaneous::multi_threading {
 
         [[nodiscard]] std::optional <value_type> receive_strong() const {
             std::unique_lock lock{m_queue->get_mutex()};
-            m_cv->wait_for(lock, std::chrono::milliseconds{100}, [&] { return !m_queue->empty_approx(); });
+            m_cv->wait(lock, [&] { return !m_queue->empty_approx(); });
             return m_queue->pop();
         }
 
         mpmc_sender<queue_type> subscribe() {
-            return mpmc_sender{m_queue};
+            return mpmc_sender{std::weak_ptr{m_queue}, std::weak_ptr{m_cv}};
         }
     };
 
@@ -93,13 +91,13 @@ namespace ywl::miscellaneous::multi_threading {
     auto make_simple_mpmc_channel() {
         auto queue = std::make_shared < thread_safe_queue < std::queue < T>>>();
         auto cv = std::make_shared<std::condition_variable_any>();
-        return std::make_pair(mpmc_sender{std::weak_ptr{queue}}, mpmc_receiver{queue, cv});
+        return std::make_pair(mpmc_sender{std::weak_ptr{queue}, std::weak_ptr{cv}}, mpmc_receiver{queue, cv});
     }
 
     export template<typename TSQueue>
     auto make_mpmc_channel() {
         auto queue = std::make_shared<TSQueue>();
         auto cv = std::make_shared<std::condition_variable_any>();
-        return std::make_pair(mpmc_sender{std::weak_ptr{queue}}, mpmc_receiver{queue, cv});
+        return std::make_pair(mpmc_sender{std::weak_ptr{queue}, std::weak_ptr{cv}}, mpmc_receiver{queue, cv});
     }
 }
