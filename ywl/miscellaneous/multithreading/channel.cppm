@@ -72,9 +72,10 @@ namespace ywl::miscellaneous::multi_threading {
         }
 
         std::optional <value_type> receive_strong() const {
-            std::unique_lock lock{m_queue->get_mutex()};
-            m_cv->wait(lock, [&] { return !m_queue->empty_approx(); });
-            lock.unlock(); // still can return nullopt, I don't want to use recursive mutex so I don't know how to fix it
+            {
+                std::unique_lock lock{m_queue->get_mutex()};
+                m_cv->wait(lock, [&] { return !m_queue->empty_approx(); });
+            }
             return m_queue->pop();
         }
 
