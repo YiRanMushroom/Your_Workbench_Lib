@@ -157,6 +157,13 @@ namespace ywl::miscellaneous::coroutine {
         constexpr void set_feedback_callback(ywl::basic::function_like<void(Feedback_Type)> auto &&callback) {
             handle.promise().feedback_callback = std::forward<decltype(callback)>(callback);
         }
+
+        constexpr coroutine_generator_task_impl_t &&with_feedback_callback(
+            this coroutine_generator_task_impl_t &&self,
+            ywl::basic::function_like<void (Feedback_Type)> auto &&callback) {
+            self.set_feedback_callback(std::forward<decltype(callback)>(callback));
+            return std::forward<coroutine_generator_task_impl_t &&>(self);
+        }
     };
 
     template<typename ResultType, typename Feedback_Type>
@@ -300,6 +307,13 @@ namespace ywl::miscellaneous::coroutine {
 
         constexpr void set_feedback_callback(ywl::basic::function_like<void(Feedback_Type)> auto &&callback) {
             handle.promise().feedback_callback = std::forward<decltype(callback)>(callback);
+        }
+
+        constexpr coroutine_generator_task_impl_t &&with_feedback_callback(
+            this coroutine_generator_task_impl_t &&self,
+            ywl::basic::function_like<void (Feedback_Type)> auto &&callback) {
+            self.set_feedback_callback(std::forward<decltype(callback)>(callback));
+            return std::forward<coroutine_generator_task_impl_t &&>(self);
         }
     };
 
