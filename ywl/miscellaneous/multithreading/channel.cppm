@@ -42,6 +42,12 @@ namespace ywl::miscellaneous::multi_threading {
             } else {
                 throw channel_closed_exception{"Channel is closed"};
             }
+
+            if (auto cv = m_cv.lock()) {
+                cv->notify_all();
+            } else {
+                throw channel_closed_exception{"Channel is closed"};
+            }
         }
 
         bool is_closed_approx() const {
@@ -50,6 +56,7 @@ namespace ywl::miscellaneous::multi_threading {
 
     private:
         std::weak_ptr <queue_type> m_queue;
+        std::weak_ptr <std::condition_variable_any> m_cv;
     };
 
     export template<typename TSQueue>
