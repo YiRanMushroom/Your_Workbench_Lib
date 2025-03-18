@@ -4,7 +4,7 @@ import ywl.std.prelude;
 import ywl.basic.helpers;
 
 namespace ywl::miscellaneous::rust {
-    template<typename, typename...>
+    export template<typename, typename...>
     class rust_enum {
         static_assert(false, "Template parameters hint must be a enum type with a list of constant_with_varable types");
     };
