@@ -11,3 +11,4 @@ export import ywl.miscellaneous.resource_holder;
 export import ywl.miscellaneous.simple_buffer;
 export import ywl.miscellaneous.coroutine;
 export import ywl.miscellaneous.multithreading;
+export import ywl.miscellaneous.rust;
