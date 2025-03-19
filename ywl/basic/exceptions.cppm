@@ -39,7 +39,7 @@ namespace ywl::basic {
         [[nodiscard]] const char *what() const noexcept override {
             // return message.c_str();
             if (!full_message) {
-                full_message = std::format("{}: {}\nat: {}:{}:{}\n", exception_reminder(), message,
+                full_message = std::format("{}: {}\nat: {}:{}:{}", exception_reminder(), message,
                                            location.file_name(), location.line(), location.column()
                         // , stacktrace
                 );
