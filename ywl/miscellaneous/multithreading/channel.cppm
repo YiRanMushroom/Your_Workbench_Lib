@@ -4,7 +4,7 @@ import ywl.std.prelude;
 import ywl.miscellaneous.multithreading.thread_safe_queue;
 import ywl.basic.exceptions;
 
-namespace ywl::miscellaneous::multi_threading {
+namespace ywl::miscellaneous::multithreading {
     export class channel_closed_exception : public basic::ywl_exception_base {
     public:
         channel_closed_exception() noexcept = delete;
