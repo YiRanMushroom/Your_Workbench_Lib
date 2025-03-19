@@ -2,7 +2,7 @@ export module ywl.util.enum_entry;
 
 import ywl.std.prelude;
 
-namespace ywl::util {
+namespace ywl::util::enum_entry {
     export template<typename EnumType, EnumType enum_value, typename ValueType>
     struct enum_entry {
         using enum_type = EnumType;
