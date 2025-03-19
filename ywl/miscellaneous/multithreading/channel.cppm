@@ -10,10 +10,10 @@ namespace ywl::miscellaneous::multithreading {
         channel_closed_exception() noexcept = delete;
 
         channel_closed_exception(std::string message, std::source_location location = std::source_location::current()
-            // , std::stacktrace stacktrace = std::stacktrace::current()
-            )
+                // , std::stacktrace stacktrace = std::stacktrace::current()
+        )
         noexcept: ywl_exception_base{std::move(message), std::move(location)
-            // , std::move(stacktrace)
+                // , std::move(stacktrace)
         } {}
 
         channel_closed_exception(const channel_closed_exception &) = default;
@@ -29,7 +29,7 @@ namespace ywl::miscellaneous::multithreading {
         }
     };
 
-    template<class TSQueue>
+    export template<class TSQueue>
     class mpmc_sender {
     public:
         using value_type = typename TSQueue::value_type;
