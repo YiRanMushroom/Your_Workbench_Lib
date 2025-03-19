@@ -125,7 +125,8 @@ namespace ywl::util::enum_entry {
 }
 
 
-export template<ywl::util::variant_of_enum_entries Variant_Enum, std::convertible_to<ywl::util::variant_pipe_flag_t>
+export template<ywl::util::enum_entry::variant_of_enum_entries Variant_Enum, std::convertible_to<
+        ywl::util::enum_entry::variant_pipe_flag_t>
     Callable_Pipe_Type>
 decltype(auto) operator|(Variant_Enum &&variant_enum, Callable_Pipe_Type &&callable_pipe) {
     return callable_pipe(std::forward<Variant_Enum>(variant_enum));
