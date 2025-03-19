@@ -10,6 +10,16 @@ project(your_workbench_lib
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# use libc++ instead of libstdc++ on all platforms
+if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++")
+else ()
+    # cmake error
+    message(FATAL_ERROR "MSVC is not supported")
+endif()
+
 file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
 
 add_library(${PROJECT_NAME} ${MODULES}
@@ -23,11 +33,11 @@ target_sources(${PROJECT_NAME}
         FILES ${MODULES}
 )
 
-if(MSVC)
+#[[if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     set_target_properties(${PROJECT_NAME} PROPERTIES
             MSVC_RUNTIME_LIBRARY ${CMAKE_MSVC_RUNTIME_LIBRARY})
-endif()
+endif()]]
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)

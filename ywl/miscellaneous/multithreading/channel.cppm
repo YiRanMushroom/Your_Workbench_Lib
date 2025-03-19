@@ -9,9 +9,12 @@ namespace ywl::miscellaneous::multi_threading {
     public:
         channel_closed_exception() noexcept = delete;
 
-        channel_closed_exception(std::string message, std::source_location location = std::source_location::current(),
-                                 std::stacktrace stacktrace = std::stacktrace::current())
-        noexcept: ywl_exception_base{std::move(message), std::move(location), std::move(stacktrace)} {}
+        channel_closed_exception(std::string message, std::source_location location = std::source_location::current()
+            // , std::stacktrace stacktrace = std::stacktrace::current()
+            )
+        noexcept: ywl_exception_base{std::move(message), std::move(location)
+            // , std::move(stacktrace)
+        } {}
 
         channel_closed_exception(const channel_closed_exception &) = default;
 
