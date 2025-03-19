@@ -84,7 +84,42 @@ namespace ywl::basic {
         }
     };
 
-    template<typename>
+    export template<typename>
+    class move_only_function {
+        static_assert(false, "Template parameter is not a function type");
+    };
+
+    export template<typename Ret, typename... Args>
+    class move_only_function<Ret(Args...)> : public move_only_function_impl<Ret, Args...> {
+    private:
+        using impl_type = move_only_function_impl<Ret, Args...>;
+
+    public:
+        move_only_function() = default;
+
+        move_only_function(const move_only_function &) = delete;
+
+        move_only_function(move_only_function &&) = default;
+
+        move_only_function &operator=(const move_only_function &) = delete;
+
+        move_only_function &operator=(move_only_function &&) = default;
+
+        using typename impl_type::base_type;
+        using typename impl_type::return_type;
+        using typename impl_type::argument_types;
+
+        using impl_type::has_value;
+        using impl_type::operator();
+        using impl_type::operator bool;
+        using impl_type::invoke;
+        using impl_type::reset;
+        using impl_type::swap;
+
+        using impl_type::move_only_function_impl;
+    };
+
+/*    template<typename>
     struct move_only_function_type {
         static_assert(false, "Template parameter is not a function type");
     };
@@ -101,5 +136,5 @@ namespace ywl::basic {
     };
 
     export template<typename F>
-    using move_only_function = typename move_only_function_type<F>::type;
+    using move_only_function = typename move_only_function_type<F>::type;*/
 }
