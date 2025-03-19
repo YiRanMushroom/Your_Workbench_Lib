@@ -1,6 +1,7 @@
 export module ywl.miscellaneous.multithreading.thread_pool;
 
 import ywl.std.prelude;
+import ywl.basic.move_only_function;
 import ywl.util.enum_entry;
 import ywl.miscellaneous.multithreading.channel;
 import ywl.miscellaneous.multithreading.thread_safe_queue;
@@ -13,9 +14,10 @@ namespace ywl::miscellaneous::multithreading {
             stop
         };
 
-        using task_type = std::variant <ywl::util::enum_entry::enum_entry<task_enum_type, task_enum_type::task,
-                std::function < void()>>,
-        ywl::util::enum_entry::enum_entry<task_enum_type, task_enum_type::stop, void>>;
+        using task_type = std::variant<ywl::util::enum_entry::enum_entry<task_enum_type, task_enum_type::task,
+                ywl::basic::move_only_function<void()>
+        >,
+                ywl::util::enum_entry::enum_entry<task_enum_type, task_enum_type::stop, void>>;
 
         using channel_sender_type = mpmc_sender <thread_safe_queue<std::queue < task_type>>>;
         using channel_receiver_type = mpmc_receiver <thread_safe_queue<std::queue < task_type>>>;
@@ -77,19 +79,19 @@ namespace ywl::miscellaneous::multithreading {
         [[nodiscard]] constexpr auto submit(std::invocable auto &&task) const {
             // return a future
             using result_type = std::invoke_result_t <std::remove_cvref_t<decltype(task)>>;
-            std::shared_ptr <std::promise<result_type>> promise = std::make_shared < std::promise < result_type >> ();
-            auto future = promise->get_future();
-            std::function<void()> wrapped_task = [task = std::forward<decltype(task)>(task),
-                    ps = promise]() mutable {
+            std::promise <result_type> promise{};
+            auto future = promise.get_future();
+            ywl::basic::move_only_function<void()> wrapped_task = [task = std::forward<decltype(task)>(task),
+                    ps = std::move(promise)]() mutable {
                 try {
                     if constexpr (std::is_same_v < result_type, void >) {
                         task();
-                        ps->set_value();
+                        ps.set_value();
                     } else {
-                        ps->set_value(task());
+                        ps.set_value(task());
                     }
                 } catch (...) {
-                    ps->set_exception(std::current_exception());
+                    ps.set_exception(std::current_exception());
                 }
             };
 
@@ -98,7 +100,8 @@ namespace ywl::miscellaneous::multithreading {
         }
 
         constexpr void submit_detached(std::invocable auto &&task) const {
-            std::function<void()> wrapped_task = [task = std::forward<decltype(task)>(task)]() mutable {
+            ywl::basic::move_only_function<void()> wrapped_task = [task = std::forward<decltype(task)>(
+                    task)]() mutable {
                 task();
             };
 
