@@ -194,8 +194,7 @@ module;
 #  endif // __has_include(<text_encoding>)
 #endif // _WIN32
 
-export module std;
-
+export module libcxx.std;
 
 #include "std/algorithm.inc"
 #include "std/any.inc"

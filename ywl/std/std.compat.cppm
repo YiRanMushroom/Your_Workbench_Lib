@@ -85,8 +85,8 @@ module;
 #  endif // __has_include(<text_encoding>)
 #endif // _WIN32
 
-export module std.compat;
-export import std;
+export module libcxx.std.compat;
+export import libcxx.std;
 
 
 #include "std.compat/cassert.inc"

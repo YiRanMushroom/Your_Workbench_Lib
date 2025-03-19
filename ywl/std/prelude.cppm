@@ -1,5 +1,5 @@
 export module ywl.std.prelude;
-export import std.compat;
+export import libcxx.std.compat;
 /*module;
 
 #define _LIBCPP_HAS_LOCALIZATION 1
