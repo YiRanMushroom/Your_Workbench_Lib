@@ -26,7 +26,8 @@ add_library(${PROJECT_NAME} ${MODULES}
         ywl/miscellaneous/multithreading/multithreading.ixx
         ywl/miscellaneous/multithreading/channel.cppm
         ywl/miscellaneous/rust.cppm
-        ywl/util/enum_entry.cppm)
+        ywl/util/enum_entry.cppm
+        ywl/miscellaneous/multithreading/thread_pool.cppm)
 
 target_sources(${PROJECT_NAME}
         PUBLIC
