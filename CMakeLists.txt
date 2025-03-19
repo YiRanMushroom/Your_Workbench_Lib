@@ -25,7 +25,8 @@ file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
 add_library(${PROJECT_NAME} ${MODULES}
         ywl/miscellaneous/multithreading/multithreading.ixx
         ywl/miscellaneous/multithreading/channel.cppm
-        ywl/miscellaneous/rust.cppm)
+        ywl/miscellaneous/rust.cppm
+        ywl/util/enum_entry.cppm)
 
 target_sources(${PROJECT_NAME}
         PUBLIC
