@@ -11,17 +11,17 @@ namespace ywl::basic {
         std::source_location location;
         // std::stacktrace stacktrace;
 
-        mutable std::optional<std::string> full_message;
+        mutable std::optional <std::string> full_message;
 
     public:
         ywl_exception_base() noexcept = delete;
 
         explicit ywl_exception_base(std::string message,
                                     std::source_location location = std::source_location::current()
-                                    //, std::stacktrace stacktrace = std::stacktrace::current()
-                                    )
-            noexcept : message{std::move(message)}, location{std::move(location)}
-                       // ,stacktrace{std::move(stacktrace)}
+                //, std::stacktrace stacktrace = std::stacktrace::current()
+        )
+        noexcept: message{std::move(message)}, location{std::move(location)}
+        // ,stacktrace{std::move(stacktrace)}
         {} // NOLINT
 
         [[nodiscard]] virtual const char *exception_reminder() const noexcept {
@@ -41,8 +41,8 @@ namespace ywl::basic {
             if (!full_message) {
                 full_message = std::format("{}: {}\nat: {}:{}:{}\n", exception_reminder(), message,
                                            location.file_name(), location.line(), location.column()
-                                           // , stacktrace
-                                           );
+                        // , stacktrace
+                );
             }
 
             return full_message->c_str();
@@ -64,11 +64,11 @@ namespace ywl::basic {
         ywl_impl_error() noexcept = delete;
 
         ywl_impl_error(std::string message, std::source_location location = std::source_location::current()
-            // , std::stacktrace stacktrace = std::stacktrace::current()
-            )
-            noexcept : ywl_exception_base{std::move(message), std::move(location)
+                // , std::stacktrace stacktrace = std::stacktrace::current()
+        )
+        noexcept: ywl_exception_base{std::move(message), std::move(location)
                 // , std::move(stacktrace)
-            } {}
+        } {}
 
         ywl_impl_error(const ywl_impl_error &) = default;
 
@@ -89,11 +89,11 @@ namespace ywl::basic {
         runtime_error() noexcept = delete;
 
         runtime_error(std::string message, std::source_location location = std::source_location::current()
-            // , std::stacktrace stacktrace = std::stacktrace::current()
-            )
-            noexcept : ywl_exception_base{std::move(message), std::move(location)
+                // , std::stacktrace stacktrace = std::stacktrace::current()
+        )
+        noexcept: ywl_exception_base{std::move(message), std::move(location)
                 // , std::move(stacktrace)
-            } {}
+        } {}
 
         runtime_error(const runtime_error &) = default;
 
@@ -114,11 +114,11 @@ namespace ywl::basic {
         logic_error() noexcept = delete;
 
         logic_error(std::string message, std::source_location location = std::source_location::current()
-            // , std::stacktrace stacktrace = std::stacktrace::current()
-            )
-            noexcept : ywl_exception_base{std::move(message), std::move(location)
+                // , std::stacktrace stacktrace = std::stacktrace::current()
+        )
+        noexcept: ywl_exception_base{std::move(message), std::move(location)
                 // , std::move(stacktrace)
-            } {}
+        } {}
 
         logic_error(const logic_error &) = default;
 
@@ -132,4 +132,31 @@ namespace ywl::basic {
             return reminder.data;
         }
     };
+
+#define DECLARE_EXCEPTION(name, reminder_m) \
+    export class name : public ywl::basic::runtime_error<reminder_m> { \
+    public:\
+        name() noexcept = delete;         \
+        name(std::string message, std::source_location location = std::source_location::current()\
+                /*, std::stacktrace stacktrace = std::stacktrace::current()*/\
+        )                                 \
+        noexcept: ywl::basic::runtime_error<reminder_m>{std::move(message), std::move(location) \
+                /*, std::move(stacktrace)*/ \
+        } {}                              \
+        name(const name &) = default;     \
+        name(name &&) noexcept = default; \
+        name &operator=(const name &) = default;                     \
+        name &operator=(name &&) noexcept = default;                 \
+        [[nodiscard]] const char *exception_reminder() const noexcept override { \
+            return ywl::basic::runtime_error<reminder_m>::exception_reminder(); \
+        } \
+    };
+
+    DECLARE_EXCEPTION(null_pointer_exception, "NULL POINTER EXCEPTION")
+
+    DECLARE_EXCEPTION(out_of_range_exception, "OUT OF RANGE EXCEPTION")
+
+    DECLARE_EXCEPTION(invalid_argument_exception, "INVALID ARGUMENT EXCEPTION")
+
+    DECLARE_EXCEPTION(integer_overflow_exception, "INTEGER OVERFLOW EXCEPTION")
 }
