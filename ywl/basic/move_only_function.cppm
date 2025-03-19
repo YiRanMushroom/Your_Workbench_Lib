@@ -116,6 +116,8 @@ namespace ywl::basic {
         constexpr move_only_function &operator=(const move_only_function &) = delete;
 
         constexpr move_only_function &operator=(move_only_function &&) = default;
+
+        using impl_type::impl_type;
     };
 
 /*    template<typename>
