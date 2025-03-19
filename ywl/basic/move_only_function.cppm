@@ -5,6 +5,9 @@ import ywl.basic.helpers;
 import ywl.basic.exceptions;
 
 namespace ywl::basic {
+    export template<typename>
+    class move_only_function;
+
     template<typename Ret, typename... Args>
     class move_only_function_impl {
 
@@ -65,9 +68,10 @@ namespace ywl::basic {
             }
         };
 
+        friend class move_only_function<Ret(Args...)>;
+
     public:
-        template<ywl::basic::function_like<Ret(Args...)> F>
-        constexpr move_only_function_impl(F &&f) : m_base(std::make_unique<derive_base_t<F>>(std::forward<F>(f))) {}
+        constexpr move_only_function_impl(std::unique_ptr <base_type> base) : m_base(std::move(base)) {}
 
         constexpr move_only_function_impl(std::nullptr_t) : m_base(nullptr) {}
 
@@ -117,29 +121,22 @@ namespace ywl::basic {
 
         constexpr move_only_function &operator=(move_only_function &&) = default;
 
-        using impl_type::impl_type;
-    };
+        constexpr move_only_function(std::nullptr_t) : impl_type{nullptr} {}
 
-/*    template<typename>
-    struct move_only_function_type {
-        static_assert(false, "Template parameter is not a function type");
-    };
+        template<ywl::basic::function_like<Ret(Args...)> F>
+        constexpr move_only_function(F &&f) requires
+        (std::is_rvalue_reference_v <F &&> && !std::is_const_v <F>) : impl_type{
+            std::make_unique < typename impl_type::template derive_base_t<std::remove_reference_t < F>>>(
+                    std::move(f) // NOLINT
+                    // f should never be copied
+            )
+        } {}
 
-    template<typename Ret, typename... Args>
-    struct move_only_function_type<Ret(Args...)> {
-        using type = move_only_function_impl<Ret, Args...>;
     };
-
-    export template<typename F>
-    using move_only_function = typename move_only_function_type<F>::type;*/
 
     export template<typename Ret, typename... Args>
     move_only_function(Ret(*)(Args...)) -> move_only_function<Ret(Args...)>;
 
     export template<typename T>
-    move_only_function(T) -> move_only_function<decltype(&T::operator())>;
-
-    export template<typename T>
-    move_only_function(T) -> move_only_function<decltype(+declval<T>())>;
+    move_only_function(T) -> move_only_function<std::remove_pointer_t < decltype(+std::declval<T>())>>;
 }
-
