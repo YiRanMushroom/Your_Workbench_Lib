@@ -107,8 +107,15 @@ namespace ywl::basic {
         using impl_type::reset;
         using impl_type::swap;
 
-        using impl_type::move_only_function_impl;
-        using impl_type::operator=;
+        constexpr move_only_function() = default;
+
+        constexpr move_only_function(const move_only_function &) = delete;
+
+        constexpr move_only_function(move_only_function &&) = default;
+
+        constexpr move_only_function &operator=(const move_only_function &) = delete;
+
+        constexpr move_only_function &operator=(move_only_function &&) = default;
     };
 
 /*    template<typename>
@@ -121,12 +128,16 @@ namespace ywl::basic {
         using type = move_only_function_impl<Ret, Args...>;
     };
 
-    // function pointer type
-    template<typename Ret, typename... Args>
-    struct move_only_function_type<Ret (*)(Args...)> {
-        using type = move_only_function_impl<Ret, Args...>;
-    };
-
     export template<typename F>
     using move_only_function = typename move_only_function_type<F>::type;*/
+
+    export template<typename Ret, typename... Args>
+    move_only_function(Ret(*)(Args...)) -> move_only_function<Ret(Args...)>;
+
+    export template<typename T>
+    move_only_function(T) -> move_only_function<decltype(&T::operator())>;
+
+    export template<typename T>
+    move_only_function(T) -> move_only_function<decltype(+declval<T>())>;
 }
+
