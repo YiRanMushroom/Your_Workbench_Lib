@@ -18,7 +18,7 @@ namespace ywl::util::enum_entry {
         using value_type = void;
         static constexpr EnumType value = enum_value;
 
-        enum_entry() = default;
+        constexpr enum_entry() = default;
     };
 
     export struct variant_pipe_flag_t {
@@ -123,10 +123,9 @@ namespace ywl::util::enum_entry {
     constexpr auto emplace = emplace_impl<Variant_Type, std::remove_cvref_t<decltype(Enum_Value)>, Enum_Value>{};
 }
 
-
 export template<ywl::util::enum_entry::variant_of_enum_entries Variant_Enum, std::convertible_to<
         ywl::util::enum_entry::variant_pipe_flag_t>
     Callable_Pipe_Type>
-decltype(auto) operator|(Variant_Enum &&variant_enum, Callable_Pipe_Type &&callable_pipe) {
+constexpr decltype(auto) operator|(Variant_Enum &&variant_enum, Callable_Pipe_Type &&callable_pipe) {
     return callable_pipe(std::forward<Variant_Enum>(variant_enum));
 }

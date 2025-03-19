@@ -25,19 +25,20 @@ namespace ywl::miscellaneous::multithreading {
         channel_sender_type m_sender;
         channel_receiver_type m_receiver;
 
-        thread_pool(std::vector <std::thread> threads, channel_sender_type sender, channel_receiver_type receiver)
+        constexpr thread_pool(std::vector <std::thread> threads, channel_sender_type sender,
+                              channel_receiver_type receiver)
                 : m_threads(std::move(threads)), m_sender(std::move(sender)), m_receiver(std::move(receiver)) {}
 
     public:
-        thread_pool() = delete;
+        constexpr thread_pool() = delete;
 
-        thread_pool(thread_pool const &) = delete;
+        constexpr thread_pool(thread_pool const &) = delete;
 
-        thread_pool(thread_pool &&) = default;
+        constexpr thread_pool(thread_pool &&) = default;
 
-        thread_pool &operator=(thread_pool const &) = delete;
+        constexpr thread_pool &operator=(thread_pool const &) = delete;
 
-        thread_pool &operator=(thread_pool &&other) noexcept {
+        constexpr thread_pool &operator=(thread_pool &&other) noexcept {
             if (this != &other) {
                 stop();
                 m_threads = std::move(other.m_threads);
@@ -47,7 +48,7 @@ namespace ywl::miscellaneous::multithreading {
             return *this;
         }
 
-        static thread_pool create(size_t thread_count) {
+        constexpr static thread_pool create(size_t thread_count) {
             auto [sender, receiver] = make_simple_mpmc_channel<task_type>();
             std::vector <std::thread> threads;
             threads.reserve(thread_count);
@@ -73,7 +74,7 @@ namespace ywl::miscellaneous::multithreading {
             return {std::move(threads), std::move(sender), std::move(receiver)};
         }
 
-        auto submit(std::invocable auto &&task) {
+        [[nodiscard]] constexpr auto submit(std::invocable auto &&task) const {
             // return a future
             using result_type = std::invoke_result_t <std::remove_cvref_t<decltype(task)>>;
             std::shared_ptr <std::promise<result_type>> promise = std::make_shared < std::promise < result_type >> ();
@@ -96,7 +97,7 @@ namespace ywl::miscellaneous::multithreading {
             return future;
         }
 
-        void submit_detached(std::invocable auto &&task) {
+        constexpr void submit_detached(std::invocable auto &&task) const {
             std::function<void()> wrapped_task = [task = std::forward<decltype(task)>(task)]() mutable {
                 task();
             };
@@ -104,7 +105,7 @@ namespace ywl::miscellaneous::multithreading {
             m_sender.send(ywl::util::enum_entry::emplace<task_type, task_enum_type::task>(std::move(wrapped_task)));
         }
 
-        void stop() {
+        constexpr void stop() {
             for (size_t i = 0; i < m_threads.size(); ++i) {
                 m_sender.send(ywl::util::enum_entry::emplace<task_type, task_enum_type::stop>());
             }
@@ -114,10 +115,10 @@ namespace ywl::miscellaneous::multithreading {
             m_threads.clear();
         }
 
-        ~thread_pool() {
+        constexpr ~thread_pool() {
             stop();
         }
 
-        explicit thread_pool(size_t thread_count) : thread_pool{create(thread_count)} {}
+        constexpr explicit thread_pool(size_t thread_count) : thread_pool{create(thread_count)} {}
     };
 }
