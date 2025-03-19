@@ -86,11 +86,8 @@ namespace ywl::util::enum_entry {
     struct get_if_move_impl : variant_pipe_flag_t {
         constexpr static auto operator()(variant_of_enum_entries auto &&variant_enum) {
             using enum_entry_type = find_enum_to_type_t<decltype(variant_enum), Enum_Value>;
-            if (std::holds_alternative<enum_entry_type>(variant_enum)) {
-                return std::move(std::get<enum_entry_type>(variant_enum).data);
-            }
 
-            return std::optional<typename enum_entry_type::value_type>{};
+            return std::move(std::get<enum_entry_type>(variant_enum).data);
         }
     };
 
