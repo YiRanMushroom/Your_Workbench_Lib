@@ -78,6 +78,10 @@ namespace ywl::basic {
         constexpr Ret invoke(Args... args) const {
             return (*this)(std::forward<Args>(args)...);
         }
+
+        constexpr void swap(move_only_function_impl &other) {
+            std::swap(m_base, other.m_base);
+        }
     };
 
     template<typename>
