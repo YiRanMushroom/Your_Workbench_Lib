@@ -111,9 +111,11 @@ namespace ywl::util::enum_entry {
         constexpr auto static operator()(auto &&... args) {
             using enum_entry_type = find_enum_to_type_t<Variant_Type, Enum_Value>;
             using stored_type = typename enum_entry_type::value_type;
-            return Variant_Type(
-                enum_entry_type(stored_type(std::forward<decltype(args)>(args)...))
-            );
+            if constexpr (std::is_same_v<stored_type, void>) {
+                return Variant_Type(enum_entry_type());
+            } else {
+                return Variant_Type(enum_entry_type(stored_type(std::forward<decltype(args)>(args)...)));
+            }
         }
     };
 
