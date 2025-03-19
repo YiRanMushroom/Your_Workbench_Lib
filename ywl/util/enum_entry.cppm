@@ -1,4 +1,4 @@
-export module enum_entry;
+export module ywl.util.enum_entry;
 
 import ywl.std.prelude;
 
