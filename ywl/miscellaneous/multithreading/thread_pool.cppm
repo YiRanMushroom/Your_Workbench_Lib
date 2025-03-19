@@ -76,10 +76,10 @@ namespace ywl::miscellaneous::multithreading {
         auto submit(std::invocable auto &&task) {
             // return a future
             using result_type = std::invoke_result_t <std::remove_cvref_t<decltype(task)>>;
-            std::unique_ptr <std::promise<result_type>> promise = std::make_unique < std::promise < result_type >> ();
+            std::shared_ptr <std::promise<result_type>> promise = std::make_shared < std::promise < result_type >> ();
             auto future = promise->get_future();
             std::function<void()> wrapped_task = [task = std::forward<decltype(task)>(task),
-                    ps = promise.release()]() mutable {
+                    ps = promise]() mutable {
                 try {
                     if constexpr (std::is_same_v < result_type, void >) {
                         task();
@@ -90,8 +90,6 @@ namespace ywl::miscellaneous::multithreading {
                 } catch (...) {
                     ps->set_exception(std::current_exception());
                 }
-
-                delete ps;
             };
 
             m_sender.send(ywl::util::enum_entry::emplace<task_type, task_enum_type::task>(std::move(wrapped_task)));
