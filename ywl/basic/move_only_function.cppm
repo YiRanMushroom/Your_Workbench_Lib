@@ -61,7 +61,7 @@ namespace ywl::basic {
 
             function_type m_function;
 
-            constexpr derive_base_t(function_type &&f) : m_function(std::move(f)) {}
+            constexpr derive_base_t(F f) : m_function(std::move(f)) {}
 
             constexpr Ret operator()(Args... args) override {
                 return m_function(std::forward<Args>(args)...);
@@ -126,9 +126,8 @@ namespace ywl::basic {
         template<ywl::basic::function_like<Ret(Args...)> F>
         constexpr move_only_function(F &&f) : impl_type{
                 std::make_unique < typename impl_type::template derive_base_t<std::remove_reference_t < F>>>(
-                std::forward<F>(f))} {}
-
-
+                std::forward<F>(f))
+        } {}
     };
 
     export template<typename Ret, typename... Args>
