@@ -1,16 +1,73 @@
 module;
 
+#ifdef _WIN32
+
+#include <windows.h>
+#include <dbghelp.h>
+
+#endif
+
 export module ywl.basic.exceptions;
 
 import ywl.std.prelude;
 import ywl.basic.string_literal;
 
 namespace ywl::basic {
+#ifdef _WIN32
+    std::string get_stacktrace() {
+        constexpr int max_frames = 128;
+        void *stack[max_frames];
+        USHORT frames = CaptureStackBackTrace(0, max_frames, stack, nullptr);
+
+        HANDLE process = GetCurrentProcess();
+        SymInitialize(process, nullptr, true);
+        DWORD options = SymGetOptions();
+        options |= SYMOPT_LOAD_LINES | SYMOPT_UNDNAME;
+        SymSetOptions(options);
+
+        std::stringstream ss;
+
+        constexpr size_t max_name_len = 256;
+        constexpr size_t buffer_size = sizeof(SYMBOL_INFO) + max_name_len;
+        uint8_t buffer[buffer_size];
+        SYMBOL_INFO *symbol = reinterpret_cast<SYMBOL_INFO *>(buffer);
+        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+        symbol->MaxNameLen = max_name_len;
+
+        IMAGEHLP_LINE64 line = {};
+        line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
+        DWORD line_displacement;
+
+        for (USHORT i = 0; i < frames; i++) {
+            DWORD64 address = reinterpret_cast<DWORD64>(stack[i]);
+            DWORD64 displacement = 0;
+
+            if (SymFromAddr(process, address, &displacement, symbol)) {
+                ss << std::format("#{}: {} ", i, symbol->Name);
+
+                if (SymGetLineFromAddr64(process, address, &line_displacement, &line)) {
+                    ss << std::format("at {}:{}", line.FileName, line.LineNumber);
+                }
+
+            } else {
+                ss << std::format("#{}: {:#018x}", i, static_cast<uintptr_t>(address));
+            }
+
+            if (i < frames - 1) {
+                ss << '\n';
+            }
+        }
+
+        SymCleanup(process);
+        return ss.str();
+    }
+
+#endif
+
     export class ywl_exception_base : public std::exception {
         std::string message;
         std::source_location location;
-        // std::stacktrace stacktrace;
-
+        std::optional <std::string> stacktrace;
         mutable std::optional <std::string> full_message;
 
     public:
@@ -20,9 +77,17 @@ namespace ywl::basic {
                                     std::source_location location = std::source_location::current()
                 //, std::stacktrace stacktrace = std::stacktrace::current()
         )
-        noexcept: message{std::move(message)}, location{std::move(location)}
+        noexcept: message{std::move(message)}, location{std::move(location)}, stacktrace{
+#ifdef _WIN32
+                get_stacktrace()
+#else
+                std::nullopt
+#endif
+        }
         // ,stacktrace{std::move(stacktrace)}
-        {} // NOLINT
+        {
+
+        } // NOLINT
 
         [[nodiscard]] virtual const char *exception_reminder() const noexcept {
             return "ywl_exception_base";
@@ -43,6 +108,11 @@ namespace ywl::basic {
                                            location.file_name(), location.line(), location.column()
                         // , stacktrace
                 );
+
+                if (stacktrace) {
+                    full_message->append("\nStacktrace:\n");
+                    full_message->append(stacktrace.value());
+                }
             }
 
             return full_message->c_str();
