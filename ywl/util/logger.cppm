@@ -25,7 +25,7 @@ namespace ywl::util {
         constexpr logger &operator=(logger &&) = delete;
 
         constexpr logger(std::ostream *osp, std::string source, std::string level, bool is_enabled) : osp{osp},
-            source{std::move(source)}, level{std::move(level)}, is_enabled{is_enabled} {
+                                                                                                      source{std::move(source)}, level{std::move(level)}, is_enabled{is_enabled} {
         }
 
         constexpr logger &set_enabled(this logger &self, bool enabled) {
@@ -102,8 +102,8 @@ namespace ywl::util {
 
         constexpr logger build(this auto &&self) {
             return logger{
-                self.osp, std::forward<decltype(self.source)>(self.source),
-                std::forward<decltype(self.level)>(self.level), true
+                    self.osp, std::forward<decltype(self.source)>(self.source),
+                    std::forward<decltype(self.level)>(self.level), true
             };
         }
     };
@@ -139,10 +139,10 @@ namespace ywl::util {
         const std::tuple refs = std::forward_as_tuple(args...);
         [&]<size_t ... Is>(std::index_sequence<Is...>) {
             ((std::cout <<
-              std::format("{}", std::get<Is>(refs)),
-              (Is != sizeof...(Tps) - 1
-                   ? (void) (std::cout << sep.data)
-                   : (void) nullptr)), ...);
+                        std::format("{}", std::get<Is>(refs)),
+                    (Is != sizeof...(Tps) - 1
+                     ? (void) (std::cout << sep.data)
+                     : (void) nullptr)), ...);
         }(std::make_index_sequence<sizeof...(Tps)>{});
     }
 
@@ -169,16 +169,16 @@ namespace ywl::util {
         const std::tuple refs = std::forward_as_tuple(args...);
         [&]<size_t ... Is>(std::index_sequence<Is...>) {
             ((std::cerr <<
-              std::format("{}", std::get<Is>(refs)),
-              (Is != sizeof...(Tps) - 1
-                   ? (void) (std::cerr << sep.data)
-                   : (void) nullptr)), ...);
+                        std::format("{}", std::get<Is>(refs)),
+                    (Is != sizeof...(Tps) - 1
+                     ? (void) (std::cerr << sep.data)
+                     : (void) nullptr)), ...);
         }(std::make_index_sequence<sizeof...(Tps)>{});
     }
 
     export template<ywl::basic::string_literal sep = " ", typename... Tps>
     constexpr const flusher_t& err_print_ln(const Tps &... args) {
-        print<sep>(args...);
+        err_print<sep>(args...);
         std::cerr << '\n';
         return cerr_flusher;
     }
