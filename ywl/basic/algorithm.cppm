@@ -8,7 +8,7 @@ import ywl.basic.exceptions;
 namespace ywl::basic {
     template<std::random_access_iterator Iter,
             ywl::basic::function_like<bool(
-            typename std::iterator_traits<Iter>::value_type)> Predicate>
+            const typename std::iterator_traits<Iter>::value_type)&> Predicate>
     constexpr std::optional <Iter> first_to_satisfy(Iter
     begin, Iter end, Predicate pred) {
         if (begin == end) {
@@ -42,7 +42,7 @@ namespace ywl::basic {
 
     template<std::random_access_iterator Iter,
             ywl::basic::function_like<bool(
-            typename std::iterator_traits<Iter>::value_type)> Predicate>
+            const typename std::iterator_traits<Iter>::value_type&)> Predicate>
     constexpr std::optional <Iter> last_to_satisfy(Iter begin, Iter end, Predicate pred) {
         if (begin == end) {
             return std::optional <Iter>{};
