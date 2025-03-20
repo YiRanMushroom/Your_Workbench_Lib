@@ -43,7 +43,6 @@ namespace ywl::app::vm {
 #ifdef _WIN32
         AddVectoredExceptionHandler(1, detail::vectored_exception_handler);
 #else
-
         std::signal(SIGSEGV, [](int sig) {
             throw ywl::basic::illegal_access_exception("Segmentation fault");
         });
@@ -56,9 +55,15 @@ namespace ywl::app::vm {
             throw ywl::basic::illegal_instruction_exception("Illegal instruction");
         });
 #endif
-
         std::set_terminate([]() {
             util::err_print_ln("Terminate called, this could due to compiler optimization of exception table.");
+            try {
+                std::rethrow_exception(std::current_exception());
+            } catch (const std::exception &e) {
+                util::err_printf_ln("The last exception was: {}", e.what());
+            } catch (...) {
+                util::err_print_ln("The last exception was unknown.");
+            }
         });
 
         try {
