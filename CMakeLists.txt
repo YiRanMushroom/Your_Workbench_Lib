@@ -28,7 +28,8 @@ add_library(${PROJECT_NAME} ${MODULES}
         ywl/miscellaneous/rust.cppm
         ywl/util/enum_entry.cppm
         ywl/miscellaneous/multithreading/thread_pool.cppm
-        ywl/basic/move_only_function.cppm)
+        ywl/basic/move_only_function.cppm
+        ywl/basic/algorithm.cppm)
 
 target_sources(${PROJECT_NAME}
         PUBLIC
