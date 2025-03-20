@@ -4,8 +4,6 @@ module;
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <dbghelp.h>
-#pragma comment(lib, "dbghelp.lib")
-#pragma comment(lib, "imagehlp.lib")
 #else
 #include <csignal>
 #endif

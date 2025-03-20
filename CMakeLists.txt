@@ -22,15 +22,7 @@ endif()
 
 file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
 
-add_library(${PROJECT_NAME} ${MODULES}
-        ywl/miscellaneous/multithreading/multithreading.ixx
-        ywl/miscellaneous/multithreading/channel.cppm
-        ywl/miscellaneous/rust.cppm
-        ywl/util/enum_entry.cppm
-        ywl/miscellaneous/multithreading/thread_pool.cppm
-        ywl/basic/move_only_function.cppm
-        ywl/basic/algorithm.cppm
-        ywl/app/vm.cppm)
+add_library(${PROJECT_NAME} ${MODULES})
 
 target_sources(${PROJECT_NAME}
         PUBLIC
@@ -75,3 +67,7 @@ install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
+
+if(WIN32)
+    target_link_libraries(your_workbench_lib PRIVATE DbgHelp)
+endif()
