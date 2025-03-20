@@ -28,9 +28,9 @@ namespace ywl::app::vm {
         try {
             return main(argc, argv);
         } catch (std::exception& e) {
-            ywl::util::err_print_ln(e.what());
+            ywl::util::err_printf_ln("VM caught an uncaptured exception which is not handled by the provided main function:\n{}", e.what());
         } catch (...) {
-            ywl::util::err_print_ln("Unknown exception was caught in vm, exiting...");
+            ywl::util::err_print_ln("Unknown exception was caught in VM, exiting...");
         }
 
         return -1;
