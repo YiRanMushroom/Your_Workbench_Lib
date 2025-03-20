@@ -124,13 +124,10 @@ namespace ywl::basic {
         constexpr move_only_function(std::nullptr_t) : impl_type{nullptr} {}
 
         template<ywl::basic::function_like<Ret(Args...)> F>
-        constexpr move_only_function(F &&f) requires
-        (std::is_rvalue_reference_v <F &&> && !std::is_const_v <F>) : impl_type{
-            std::make_unique < typename impl_type::template derive_base_t<std::remove_reference_t < F>>>(
-                    std::move(f) // NOLINT
-                    // f should never be copied
-            )
-        } {}
+        constexpr move_only_function(F &&f) : impl_type{
+                std::make_unique < typename impl_type::template derive_base_t<std::remove_reference_t < F>>>(
+                std::forward<F>(f))} {}
+
 
     };
 
@@ -139,4 +136,7 @@ namespace ywl::basic {
 
     export template<typename T>
     move_only_function(T) -> move_only_function<std::remove_pointer_t < decltype(+std::declval<T>())>>;
+
+    export template<typename Ret, typename... Args>
+    move_only_function(std::function<Ret(Args...)>) -> move_only_function<Ret(Args...)>;
 }
