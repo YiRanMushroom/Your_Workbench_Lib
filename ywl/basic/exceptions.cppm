@@ -239,4 +239,6 @@ namespace ywl::basic {
     DECLARE_EXCEPTION(overflow_exception, "OverflowException")
 
     DECLARE_EXCEPTION(illegal_instruction_exception, "IllegalInstructionException")
+
+    DECLARE_EXCEPTION(null_optional_exception, "NullOptionalException")
 }
