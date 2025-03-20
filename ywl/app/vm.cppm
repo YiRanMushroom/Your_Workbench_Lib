@@ -40,17 +40,30 @@ namespace ywl::app::vm {
     int run(int argc, char **argv) {
 #ifdef _WIN32
         AddVectoredExceptionHandler(1, detail::vectored_exception_handler);
+#else
 
-        std::set_terminate([]() {
-            util::err_print_ln("Terminate called, this could due to compilier optimization of exception table.");
+        std::signal(SIGSEGV, [](int sig) {
+            throw ywl::basic::illegal_access_exception("Segmentation fault");
+        });
+
+        std::signal(SIGFPE, [](int sig) {
+            throw ywl::basic::overflow_exception("Floating point exception");
+        });
+
+        std::signal(SIGILL, [](int sig) {
+            throw ywl::basic::illegal_instruction_exception("Illegal instruction");
         });
 #endif
+
+        std::set_terminate([]() {
+            util::err_print_ln("Terminate called, this could due to compiler optimization of exception table.");
+        });
 
         try {
             return main(argc, argv);
         } catch (std::exception &e) {
             ywl::util::err_printf_ln(
-                    "VM caught an uncaptured exception which is not handled by the provided main function:\n{}\nExiting",
+                    "VM caught an uncaptured exception which is not handled by the provided main function:\n{}\nExiting...",
                     e.what());
         } catch (...) {
             ywl::util::err_print_ln("Unknown exception was caught in VM. Exiting...");
