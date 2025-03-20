@@ -15,10 +15,8 @@ import ywl.util.logger;
 namespace ywl::app::vm {
 #ifdef _WIN32
     namespace detail {
-        thread_local EXCEPTION_POINTERS* current_exception = nullptr;
 
         LONG WINAPI vectored_exception_handler(PEXCEPTION_POINTERS ep) {
-            current_exception = ep;
             switch (ep->ExceptionRecord->ExceptionCode) {
                 case EXCEPTION_ACCESS_VIOLATION: {
                     auto addr = reinterpret_cast<void*>(ep->ExceptionRecord->ExceptionInformation[1]);
@@ -44,11 +42,7 @@ namespace ywl::app::vm {
         AddVectoredExceptionHandler(1, detail::vectored_exception_handler);
 
         std::set_terminate([]() {
-            if (detail::current_exception) {
-                detail::vectored_exception_handler(detail::current_exception);
-            }
-
-            util::err_print_ln("Call stack cannot be retrieved. Terminating...");
+            util::err_print_ln("Terminate called, this could due to compilier optimization of exception table.");
         });
 #endif
 
