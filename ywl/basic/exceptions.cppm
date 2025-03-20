@@ -83,7 +83,7 @@ namespace ywl::basic {
         }
     };
 
-    export template<ywl::basic::string_literal reminder = "RUNTIME ERROR">
+    export template<ywl::basic::string_literal reminder = "RuntimeError">
     class runtime_error : public ywl_exception_base {
     public:
         runtime_error() noexcept = delete;
@@ -108,7 +108,7 @@ namespace ywl::basic {
         }
     };
 
-    export template<ywl::basic::string_literal reminder = "LOGIC ERROR">
+    export template<ywl::basic::string_literal reminder = "LogicError">
     class logic_error : public ywl_exception_base {
     public:
         logic_error() noexcept = delete;
@@ -152,11 +152,21 @@ namespace ywl::basic {
         } \
     };
 
-    DECLARE_EXCEPTION(null_pointer_exception, "NULL POINTER EXCEPTION")
+    DECLARE_EXCEPTION(null_pointer_exception, "NullPtrException")
 
-    DECLARE_EXCEPTION(out_of_range_exception, "OUT OF RANGE EXCEPTION")
+    DECLARE_EXCEPTION(out_of_range_exception, "OutOfRangeException")
 
-    DECLARE_EXCEPTION(invalid_argument_exception, "INVALID ARGUMENT EXCEPTION")
+    DECLARE_EXCEPTION(invalid_argument_exception, "InvalidArgumentException")
 
-    DECLARE_EXCEPTION(integer_overflow_exception, "INTEGER OVERFLOW EXCEPTION")
+    DECLARE_EXCEPTION(integer_overflow_exception, "IntegerOverflowException")
+
+    DECLARE_EXCEPTION(illegal_access_exception, "IllegalAccessException")
+
+    DECLARE_EXCEPTION(illegal_state_exception, "IllegalStateException")
+
+    DECLARE_EXCEPTION(integer_divide_by_zero_exception, "IntegerDivideByZeroException")
+
+    DECLARE_EXCEPTION(overflow_exception, "OverflowException")
+
+    DECLARE_EXCEPTION(illegal_instruction_exception, "IllegalInstructionException")
 }
