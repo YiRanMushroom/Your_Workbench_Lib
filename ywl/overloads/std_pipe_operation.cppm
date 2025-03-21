@@ -226,7 +226,7 @@ namespace ywl::overloads {
             template<typename Container_Type, typename Fn>
             constexpr decltype(auto) operator()(Container_Type &&container, Fn &&fn) const {
                 for (auto &&x: container) {
-                    fn(ywl::basic::forward_value_based_on_container<Container_Type>(x));
+                    fn(ywl::basic::forward_value_based_on_container<Container_Type&&>(x));
                 }
                 return container;
             }

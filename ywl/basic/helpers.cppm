@@ -13,7 +13,7 @@ namespace ywl::basic {
     template<auto * fn, typename Ret_T, typename... Args_T>
     struct function_t_crtp<fn, Ret_T(*)(Args_T...)> {
         static_assert(std::is_invocable_v<decltype(fn), Args_T...>,
-                      "The function pointer type does not match the function signature");
+        "The function pointer type does not match the function signature");
         using function_ptr_type = Ret_T(*)(Args_T...);
 
         constexpr Ret_T operator()(Args_T... args) const noexcept(noexcept(fn(std::forward<Args_T>(args)...))) {
@@ -138,15 +138,12 @@ namespace ywl::basic {
     template<typename First, typename... Rest>
     struct unique_tuple_impl<First, Rest...> {
         using type = std::conditional_t<
-            type_in_tuple_v<First, std::tuple<Rest...>>,
-            typename unique_tuple_impl<Rest...>::type,
-            decltype(
-                std::tuple_cat(
-                    std::tuple<First>{},
-                    std::declval<typename unique_tuple_impl<Rest...>::type>()
-                )
-            )
-        >;
+        type_in_tuple_v<First, std::tuple<Rest...>>,
+        typename unique_tuple_impl<Rest...>::type,
+        decltype(
+        std::tuple_cat(
+                std::tuple<First>{},
+                std::declval<typename unique_tuple_impl<Rest...>::type>()))>;
     };
 
     template<typename... Types>
@@ -160,7 +157,7 @@ namespace ywl::basic {
 
     export template<typename... Types>
     struct unique_tuple_from_tuple<std::tuple<Types...>> {
-        using type = unique_tuple_impl_t<Types...>;
+    using type = unique_tuple_impl_t<Types...>;
     };
 
     export template<typename... Types>
@@ -209,27 +206,27 @@ namespace ywl::basic {
 
     export template<typename Container_Type, typename Value_Type>
     struct copy_universal_reference {
-        using type = std::remove_reference_t<Container_Type>;
+        static_assert(false, "Container_Type is not a reference type");
     };
 
     export template<typename Container_Type, typename Value_Type>
     struct copy_universal_reference<Container_Type &, Value_Type> {
-        using type = std::remove_reference_t<Container_Type>&;
+        using type = std::remove_cvref_t<Value_Type>&;
     };
 
     export template<typename Container_Type, typename Value_Type>
     struct copy_universal_reference<const Container_Type &, Value_Type> {
-        using type = const std::remove_reference_t<Container_Type>&;
+        using type = const std::remove_cvref_t<Value_Type>&;
     };
 
     export template<typename Container_Type, typename Value_Type>
     struct copy_universal_reference<Container_Type &&, Value_Type> {
-        using type = std::remove_reference_t<Container_Type>&&;
+        using type = std::remove_cvref_t<Value_Type>&&;
     };
 
     export template<typename Container_Type, typename Value_Type>
     struct copy_universal_reference<const Container_Type &&, Value_Type> {
-        using type = const std::remove_reference_t<Container_Type>&&;
+        using type = const std::remove_cvref_t<Value_Type>&&;
     };
 
     export template<typename Container_Type, typename Value_Type>
