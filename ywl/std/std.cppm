@@ -148,7 +148,7 @@ module;
 #include <valarray>
 #include <variant>
 #include <vector>
-#include <version>
+// #include <version>
 
 // *** Headers not yet available ***
 //
@@ -305,5 +305,5 @@ export module libcxx.std;
 #include "std/valarray.inc"
 #include "std/variant.inc"
 #include "std/vector.inc"
-#include "std/version.inc"
+// #include "std/version.inc"
 
