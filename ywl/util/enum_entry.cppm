@@ -58,13 +58,22 @@ namespace ywl::util::enum_entry {
                 enum_value>::type>;
     };
 
-    template<typename Variant_Enum_Type, auto Enum_Value>
+    /*template<typename Variant_Enum_Type, auto Enum_Value>
     using find_enum_to_type_t = decltype(
         [] -> decltype(auto) {
             using result_type = typename find_enum_to_type<std::remove_cvref_t<Variant_Enum_Type>, Enum_Value>::type;
             static_assert(!std::is_same_v<result_type, not_found_t>, "Not found");
             return result_type{};
-        }());
+        }());*/
+
+    template<typename Variant_Enum_Type, auto Enum_Value>
+    struct find_enum_to_type_impl {
+        using result_type = typename find_enum_to_type<std::remove_cvref_t<Variant_Enum_Type>, Enum_Value>::type;
+        static_assert(!std::is_same_v<result_type, not_found_t>, "Not found");
+    };
+
+    template<typename Variant_Enum_Type, auto Enum_Value>
+    using find_enum_to_type_t = typename find_enum_to_type_impl<Variant_Enum_Type, Enum_Value>::result_type;
 
     template<typename Enum_Type, Enum_Type Enum_Value>
     struct holds_impl : variant_pipe_flag_t {
