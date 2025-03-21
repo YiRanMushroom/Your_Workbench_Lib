@@ -1,5 +1,3 @@
-module;
-
 export module ywl.prelude;
 
 export import ywl.std.prelude;
