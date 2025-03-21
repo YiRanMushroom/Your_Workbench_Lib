@@ -2,6 +2,7 @@ export module ywl.overloads.std_pipe_operation;
 
 import ywl.std.prelude;
 import ywl.basic.exceptions;
+import ywl.basic.helpers;
 
 namespace ywl::overloads {
     struct pipe_flag_t {
@@ -161,8 +162,10 @@ namespace ywl::overloads {
             constexpr map_impl_t() = default;
 
             template<typename Container_Type, typename Fn>
-            constexpr auto operator()(Container_Type &&container, Fn &&fn) const {
-                std::transform(std::begin(container), std::end(container), std::begin(container), std::forward<Fn>(fn));
+            constexpr decltype(auto) operator()(Container_Type &&container, Fn &&fn) const {
+                for (auto &x: container) {
+                    x = fn(std::move(x));
+                }
                 return std::forward<Container_Type>(container);
             }
         };
@@ -197,8 +200,16 @@ namespace ywl::overloads {
 
                 target_container_type target_container;
 
-                std::transform(std::begin(container), std::end(container), std::back_inserter(target_container),
-                               std::forward<Fn>(fn));
+                if constexpr (requires {
+                    target_container.reserve(std::size(container));
+                }) {
+                    target_container.reserve(std::size(container));
+                }
+
+                // use emplace at end
+                for (auto &&x: container) {
+                    target_container.emplace(target_container.end(), fn(std::move(x)));
+                }
 
                 return target_container;
             }
@@ -207,6 +218,23 @@ namespace ywl::overloads {
         export template<typename Fn>
         constexpr auto mapped(Fn &&fn) {
             return constexpr_pipe<mapped_impl_t{}>(std::forward<Fn>(fn));
+        }
+
+        struct for_each_impl_t {
+            constexpr for_each_impl_t() = default;
+
+            template<typename Container_Type, typename Fn>
+            constexpr decltype(auto) operator()(Container_Type &&container, Fn &&fn) const {
+                for (auto &&x: container) {
+                    fn(ywl::basic::forward_value_based_on_container<Container_Type>(x));
+                }
+                return container;
+            }
+        };
+
+        export template<typename Fn>
+        constexpr auto for_each(Fn &&fn) {
+            return constexpr_pipe<for_each_impl_t{}>(std::forward<Fn>(fn));
         }
     }
 }

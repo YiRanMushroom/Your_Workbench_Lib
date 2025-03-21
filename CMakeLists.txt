@@ -23,7 +23,8 @@ endif()
 file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
 
 add_library(${PROJECT_NAME} ${MODULES}
-        ywl/overloads/std_pipe_operation.cppm)
+        ywl/overloads/std_pipe_operation.cppm
+        ywl/overloads/overloads.ixx)
 
 target_sources(${PROJECT_NAME}
         PUBLIC

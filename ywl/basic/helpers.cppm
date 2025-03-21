@@ -206,4 +206,38 @@ namespace ywl::basic {
         overload_fns(const Fns &...) {
         }
     };
+
+    export template<typename Container_Type, typename Value_Type>
+    struct copy_universal_reference {
+        using type = std::remove_reference_t<Container_Type>;
+    };
+
+    export template<typename Container_Type, typename Value_Type>
+    struct copy_universal_reference<Container_Type &, Value_Type> {
+        using type = std::remove_reference_t<Container_Type>&;
+    };
+
+    export template<typename Container_Type, typename Value_Type>
+    struct copy_universal_reference<const Container_Type &, Value_Type> {
+        using type = const std::remove_reference_t<Container_Type>&;
+    };
+
+    export template<typename Container_Type, typename Value_Type>
+    struct copy_universal_reference<Container_Type &&, Value_Type> {
+        using type = std::remove_reference_t<Container_Type>&&;
+    };
+
+    export template<typename Container_Type, typename Value_Type>
+    struct copy_universal_reference<const Container_Type &&, Value_Type> {
+        using type = const std::remove_reference_t<Container_Type>&&;
+    };
+
+    export template<typename Container_Type, typename Value_Type>
+    using copy_universal_reference_t = typename copy_universal_reference<Container_Type, Value_Type>::type;
+
+    export template<typename Container_Type, typename Value_Type>
+    decltype(auto) forward_value_based_on_container(Value_Type&& value) {
+        using forward_type = copy_universal_reference_t<Container_Type, Value_Type>;
+        return std::forward<forward_type>(value);
+    }
 }
