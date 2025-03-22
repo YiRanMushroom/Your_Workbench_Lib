@@ -96,8 +96,8 @@ namespace ywl::miscellaneous {
         using reverse_index_sequence = ywl::basic::reverse_index_sequence_t<sizeof...(Ts)>;
 
         constexpr static std::tuple<Ts...> read_from(std::vector<unsigned char> &container) {
-            return [&]<size_t... Is>(std::index_sequence<Is...>) {
-                return std::tuple<Ts...>{buffer_impl_t<Ts>::read_from(container)...};
+            return [&]<size_t... Is>(std::index_sequence<Is...>) -> std::tuple<Ts...> {
+                return {buffer_impl_t<Ts>::read_from(container)...};
             }(index_sequence{});
         }
 
