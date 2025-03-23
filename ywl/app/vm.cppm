@@ -38,6 +38,12 @@ namespace ywl::app::vm {
     }
 #endif
 
+    bool vm_initialized_cond = false;
+
+    export bool vm_initialized() {
+        return vm_initialized_cond;
+    }
+
     export template<int(*main)(int, char **)>
     int run(int argc, char **argv) {
 #ifdef _WIN32
@@ -65,6 +71,8 @@ namespace ywl::app::vm {
                 utils::err_print_ln("The last exception was unknown.");
             }
         });
+
+        vm_initialized_cond = true;
 
         try {
             return main(argc, argv);
