@@ -25,6 +25,10 @@ namespace ywl::utils {
     }
 
     constexpr bool create_directory(const std::filesystem::path &path) {
+        // if directory is "" return true
+        if (path.empty()) {
+            return true;
+        }
         if (std::filesystem::exists(path)) {
             return true;
         }
