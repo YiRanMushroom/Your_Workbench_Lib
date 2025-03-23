@@ -1,10 +1,10 @@
-export module ywl.miscellaneous.multithreading.channel;
+export module ywl.misc.multithreading.channel;
 
 import ywl.std.prelude;
-import ywl.miscellaneous.multithreading.thread_safe_queue;
+import ywl.misc.multithreading.thread_safe_queue;
 import ywl.basic.exceptions;
 
-namespace ywl::miscellaneous::multithreading {
+namespace ywl::misc::multithreading {
     export class channel_closed_exception : public basic::ywl_exception_base {
     public:
         channel_closed_exception() noexcept = delete;

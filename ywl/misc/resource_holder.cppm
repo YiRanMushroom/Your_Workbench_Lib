@@ -1,12 +1,10 @@
-module;
-
-export module ywl.miscellaneous.resource_holder;
+export module ywl.misc.resource_holder;
 
 import ywl.std.prelude;
 import ywl.basic.exceptions;
 import ywl.basic.helpers;
 
-namespace ywl::miscellaneous {
+namespace ywl::misc {
     export template<typename T>
     concept is_unique_resource_holder_hint_type = requires
     {

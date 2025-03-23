@@ -12,7 +12,7 @@ export module ywl.app.vm;
 
 import ywl.std.prelude;
 import ywl.basic.exceptions;
-import ywl.util.logger;
+import ywl.utils.logger;
 
 namespace ywl::app::vm {
 #ifdef _WIN32
@@ -56,24 +56,24 @@ namespace ywl::app::vm {
         });
 #endif
         std::set_terminate([]() {
-            util::err_print_ln("Terminate called, this could due to compiler optimization of exception table.");
+            utils::err_print_ln("Terminate called, this could due to compiler optimization of exception table.");
             try {
                 std::rethrow_exception(std::current_exception());
             } catch (const std::exception &e) {
-                util::err_printf_ln("The last exception was: {}", e.what());
+                utils::err_printf_ln("The last exception was: {}", e.what());
             } catch (...) {
-                util::err_print_ln("The last exception was unknown.");
+                utils::err_print_ln("The last exception was unknown.");
             }
         });
 
         try {
             return main(argc, argv);
         } catch (std::exception &e) {
-            ywl::util::err_printf_ln(
+            ywl::utils::err_printf_ln(
                     "VM caught an uncaptured exception which is not handled by the provided main function:\n{}\nExiting...",
                     e.what());
         } catch (...) {
-            ywl::util::err_print_ln("Unknown exception was caught in VM. Exiting...");
+            ywl::utils::err_print_ln("Unknown exception was caught in VM. Exiting...");
         }
 
         return 0;

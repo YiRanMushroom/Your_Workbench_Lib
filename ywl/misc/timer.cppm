@@ -1,12 +1,10 @@
-module;
-
-export module ywl.miscellaneous.timer;
+export module ywl.misc.timer;
 
 import ywl.overloads.std_overloads;
 
 import ywl.std.prelude;
 
-namespace ywl::miscellaneous {
+namespace ywl::misc {
     export template<typename clock_type = std::chrono::high_resolution_clock,
         typename duration_type = std::chrono::milliseconds>
     class timer {

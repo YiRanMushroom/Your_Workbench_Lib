@@ -1,9 +1,9 @@
-export module ywl.miscellaneous.multithreading.thread_safe_queue;
+export module ywl.misc.multithreading.thread_safe_queue;
 
 import ywl.std.prelude;
 import ywl.basic.exceptions;
 
-namespace ywl::miscellaneous::multithreading {
+namespace ywl::misc::multithreading {
     export template<typename Queue_Type>
     concept is_queue = requires(Queue_Type queue) {
         typename Queue_Type::value_type;

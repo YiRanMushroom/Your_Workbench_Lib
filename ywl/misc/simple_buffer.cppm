@@ -2,13 +2,13 @@ module;
 
 #include <cassert>
 
-export module ywl.miscellaneous.simple_buffer;
+export module ywl.misc.simple_buffer;
 
 import ywl.std.prelude;
 import ywl.basic.helpers;
-import ywl.util.logger;
+import ywl.utils.logger;
 
-namespace ywl::miscellaneous {
+namespace ywl::misc {
     export template<typename>
     struct buffer_impl_t;
 

@@ -1,5 +1,3 @@
-module;
-
 export module ywl.basic.string_literal;
 
 import ywl.std.prelude;

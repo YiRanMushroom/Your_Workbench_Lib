@@ -1,9 +1,9 @@
-export module ywl.miscellaneous.rust;
+export module ywl.misc.rust;
 
 import ywl.std.prelude;
 import ywl.basic.helpers;
 
-namespace ywl::miscellaneous::rust {
+namespace ywl::misc::rust {
     export template<typename, typename...>
     class rust_enum {
         static_assert(false, "Template parameters hint must be a enum type with a list of constant_with_varable types");

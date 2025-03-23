@@ -1,5 +1,3 @@
-module;
-
 export module ywl.overloads.std_overloads;
 
 import ywl.std.prelude;

@@ -1,10 +1,10 @@
-export module ywl.miscellaneous.coroutine;
+export module ywl.misc.coroutine;
 
 import ywl.std.prelude;
 import ywl.basic.exceptions;
 import ywl.basic.helpers;
 
-namespace ywl::miscellaneous::coroutine {
+namespace ywl::misc::coroutine {
     template<typename ResultType, typename Co_Await_Type, typename Feedback_Type>
     class coroutine_generator_task_impl_t {
     private:

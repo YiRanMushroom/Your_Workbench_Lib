@@ -1,10 +1,8 @@
-module;
-
-export module ywl.miscellaneous.random;
+export module ywl.misc.random;
 
 import ywl.std.prelude;
 
-namespace ywl::miscellaneous {
+namespace ywl::misc {
     namespace ns_random::impl {
         template<typename T, typename engine_type = std::mt19937, template
             <typename> typename distribution_type = std::uniform_int_distribution>

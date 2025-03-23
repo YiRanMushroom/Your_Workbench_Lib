@@ -1,12 +1,14 @@
-export module ywl.miscellaneous.multithreading.thread_pool;
+export module ywl.misc.multithreading.thread_pool;
 
 import ywl.std.prelude;
 import ywl.basic.move_only_function;
-import ywl.util.enum_entry;
-import ywl.miscellaneous.multithreading.channel;
-import ywl.miscellaneous.multithreading.thread_safe_queue;
+import ywl.utils.enum_entry;
+import ywl.misc.multithreading.channel;
+import ywl.misc.multithreading.thread_safe_queue;
 
-namespace ywl::miscellaneous::multithreading {
+using namespace ywl::utils::enum_entry;
+
+namespace ywl::misc::multithreading {
     export class thread_pool {
     private:
         enum class task_enum_type {
@@ -14,10 +16,10 @@ namespace ywl::miscellaneous::multithreading {
             stop
         };
 
-        using task_type = std::variant<ywl::util::enum_entry::enum_entry<task_enum_type, task_enum_type::task,
+        using task_type = std::variant<enum_entry<task_enum_type, task_enum_type::task,
                 ywl::basic::move_only_function<void()>
         >,
-                ywl::util::enum_entry::enum_entry<task_enum_type, task_enum_type::stop, void>>;
+                enum_entry<task_enum_type, task_enum_type::stop, void>>;
 
         using channel_sender_type = mpmc_sender <thread_safe_queue<std::queue < task_type>>>;
         using channel_receiver_type = mpmc_receiver <thread_safe_queue<std::queue < task_type>>>;
@@ -63,11 +65,11 @@ namespace ywl::miscellaneous::multithreading {
                             continue;
                         }
 
-                        if (*task | ywl::util::enum_entry::holds_enum<task_enum_type::stop>) {
+                        if (*task | holds_enum<task_enum_type::stop>) {
                             break;
                         }
 
-                        auto unwrapped = *task | ywl::util::enum_entry::get_if_move<task_enum_type::task>;
+                        auto unwrapped = *task | get_if_move<task_enum_type::task>;
                         unwrapped();
                     }
                 });
@@ -95,7 +97,7 @@ namespace ywl::miscellaneous::multithreading {
                 }
             };
 
-            m_sender.send(ywl::util::enum_entry::emplace<task_type, task_enum_type::task>(std::move(wrapped_task)));
+            m_sender.send(emplace<task_type, task_enum_type::task>(std::move(wrapped_task)));
             return future;
         }
 
@@ -105,12 +107,12 @@ namespace ywl::miscellaneous::multithreading {
                 task();
             };
 
-            m_sender.send(ywl::util::enum_entry::emplace<task_type, task_enum_type::task>(std::move(wrapped_task)));
+            m_sender.send(emplace<task_type, task_enum_type::task>(std::move(wrapped_task)));
         }
 
         constexpr void stop() {
             for (size_t i = 0; i < m_threads.size(); ++i) {
-                m_sender.send(ywl::util::enum_entry::emplace<task_type, task_enum_type::stop>());
+                m_sender.send(emplace<task_type, task_enum_type::stop>());
             }
             for (auto &thread: m_threads) {
                 thread.join();
