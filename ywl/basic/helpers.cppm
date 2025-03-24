@@ -11,7 +11,7 @@ namespace ywl::basic {
     template<auto * fn, typename Ret_T, typename... Args_T>
     struct function_t_crtp<fn, Ret_T(*)(Args_T...)> {
         static_assert(std::is_invocable_v<decltype(fn), Args_T...>,
-        "The function pointer type does not match the function signature");
+                      "The function pointer type does not match the function signature");
         using function_ptr_type = Ret_T(*)(Args_T...);
 
         constexpr Ret_T operator()(Args_T... args) const noexcept(noexcept(fn(std::forward<Args_T>(args)...))) {
@@ -136,12 +136,12 @@ namespace ywl::basic {
     template<typename First, typename... Rest>
     struct unique_tuple_impl<First, Rest...> {
         using type = std::conditional_t<
-        type_in_tuple_v<First, std::tuple<Rest...>>,
-        typename unique_tuple_impl<Rest...>::type,
-        decltype(
-        std::tuple_cat(
-                std::tuple<First>{},
-                std::declval<typename unique_tuple_impl<Rest...>::type>()))>;
+            type_in_tuple_v<First, std::tuple<Rest...>>,
+            typename unique_tuple_impl<Rest...>::type,
+            decltype(
+                std::tuple_cat(
+                    std::tuple<First>{},
+                    std::declval<typename unique_tuple_impl<Rest...>::type>()))>;
     };
 
     template<typename... Types>
@@ -155,7 +155,7 @@ namespace ywl::basic {
 
     export template<typename... Types>
     struct unique_tuple_from_tuple<std::tuple<Types...>> {
-    using type = unique_tuple_impl_t<Types...>;
+        using type = unique_tuple_impl_t<Types...>;
     };
 
     export template<typename... Types>
@@ -209,30 +209,59 @@ namespace ywl::basic {
 
     export template<typename Container_Type, typename Value_Type>
     struct copy_universal_reference<Container_Type &, Value_Type> {
-        using type = std::remove_cvref_t<Value_Type>&;
+        using type = std::remove_cvref_t<Value_Type> &;
     };
 
     export template<typename Container_Type, typename Value_Type>
     struct copy_universal_reference<const Container_Type &, Value_Type> {
-        using type = const std::remove_cvref_t<Value_Type>&;
+        using type = const std::remove_cvref_t<Value_Type> &;
     };
 
     export template<typename Container_Type, typename Value_Type>
     struct copy_universal_reference<Container_Type &&, Value_Type> {
-        using type = std::remove_cvref_t<Value_Type>&&;
+        using type = std::remove_cvref_t<Value_Type> &&;
     };
 
     export template<typename Container_Type, typename Value_Type>
     struct copy_universal_reference<const Container_Type &&, Value_Type> {
-        using type = const std::remove_cvref_t<Value_Type>&&;
+        using type = const std::remove_cvref_t<Value_Type> &&;
     };
 
     export template<typename Container_Type, typename Value_Type>
     using copy_universal_reference_t = typename copy_universal_reference<Container_Type, Value_Type>::type;
 
     export template<typename Container_Type, typename Value_Type>
-    decltype(auto) forward_value_based_on_container(Value_Type&& value) {
+    decltype(auto) forward_value_based_on_container(Value_Type &&value) {
         using forward_type = copy_universal_reference_t<Container_Type, Value_Type>;
         return std::forward<forward_type>(value);
     }
+
+    /*template<typename Target_Value_Type, typename Template_Type>
+    struct fill_template {
+        static_assert(false, "Cannot find the mapped value type.");
+    };
+
+    template<typename Target_Value_Type, template<typename...> typename Template_Type, typename First_Type, typename... Rest_Types>
+    struct fill_template<Target_Value_Type, Template_Type<First_Type, Rest_Types...>> {
+        using type = Template_Type<Target_Value_Type>;
+    };*/
+
+    export template<typename Target_Type, typename Original_Type, typename Container_Type>
+    struct exchange_template_type {
+        static_assert(false, "Cannot find the mapped value type.");
+    };
+
+    export template<typename Target_Type, typename Original_Type>
+    struct exchange_template_type<Target_Type, Original_Type, Original_Type> {
+        using type = Target_Type;
+    };
+
+    export template<typename Target_Type, typename Original_Type, template<typename...> typename Container_Type, typename...
+        Types>
+    struct exchange_template_type<Target_Type, Original_Type, Container_Type<Types...>> {
+        using type = Container_Type<typename exchange_template_type<Target_Type, Original_Type, Types>::type...>;
+    };
+
+    export template<typename Target_Type, typename Original_Type, typename Container_Type>
+    using exchange_template_type_t = typename exchange_template_type<Target_Type, Original_Type, Container_Type>::type;
 }

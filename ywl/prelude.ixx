@@ -2,6 +2,7 @@ export module ywl.prelude;
 
 export import ywl.std.prelude;
 export import ywl.all;
+export import ywl.std_alias;
 
 namespace ywl {
     export using ywl::utils::print;

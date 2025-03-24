@@ -21,11 +21,12 @@ namespace ywl::overloads {
     struct constexpr_pipe_t : pipe_flag_t {
         std::tuple<Args...> args;
 
-        static_assert((!std::is_rvalue_reference_v <Args> && ...));
+        static_assert((!std::is_rvalue_reference_v<Args> && ...));
 
         constexpr constexpr_pipe_t() = delete;
 
-        constexpr constexpr_pipe_t(std::tuple<Args...> args) : args{std::move(args)} {}
+        constexpr constexpr_pipe_t(std::tuple<Args...> args) : args{std::move(args)} {
+        }
 
         constexpr decltype(auto)
         operator()(auto &&target) requires std::is_invocable_v<decltype(fn), decltype(target), Args...> {
@@ -34,8 +35,8 @@ namespace ywl::overloads {
     };
 
     export template<auto fn, typename... Args>
-    constexpr auto constexpr_pipe(Args &&...args) {
-        return constexpr_pipe_t<fn, Args...>{std::tuple < Args...>{ std::forward<Args>(args)... }};
+    constexpr auto constexpr_pipe(Args &&... args) {
+        return constexpr_pipe_t<fn, Args...>{std::tuple<Args...>{std::forward<Args>(args)...}};
     }
 
     template<typename Fn, typename... Args>
@@ -43,11 +44,12 @@ namespace ywl::overloads {
         Fn fn;
         std::tuple<Args...> args;
 
-        static_assert((!std::is_rvalue_reference_v <Args> && ...));
+        static_assert((!std::is_rvalue_reference_v<Args> && ...));
 
         constexpr pipe_t() = delete;
 
-        constexpr pipe_t(Fn fn, std::tuple<Args...> args) : fn{std::move(fn)}, args{std::move(args)} {}
+        constexpr pipe_t(Fn fn, std::tuple<Args...> args) : fn{std::move(fn)}, args{std::move(args)} {
+        }
 
         constexpr decltype(auto)
         operator()(auto &&target) requires std::is_invocable_v<Fn, decltype(target), Args...> {
@@ -56,8 +58,8 @@ namespace ywl::overloads {
     };
 
     export template<typename Fn, typename... Args>
-    constexpr auto pipe(Fn &&fn, Args &&...args) {
-        return pipe_t<Fn, Args...>{std::forward<Fn>(fn), std::tuple < Args...>{ std::forward<Args>(args)... }};
+    constexpr auto pipe(Fn &&fn, Args &&... args) {
+        return pipe_t<Fn, Args...>{std::forward<Fn>(fn), std::tuple<Args...>{std::forward<Args>(args)...}};
     }
 
     namespace ops {
@@ -178,25 +180,21 @@ namespace ywl::overloads {
         struct mapped_impl_t {
             constexpr mapped_impl_t() = default;
 
-            template<typename Target_Value_Type, typename Template_Type>
-            struct fill_template {
-                static_assert(false, "Cannot find the mapped value type.");
-            };
-
-            template<typename Target_Value_Type, template<typename...> typename Template_Type, typename First_Type, typename... Rest_Types>
-            struct fill_template<Target_Value_Type, Template_Type<First_Type, Rest_Types...>> {
-                using type = Template_Type<Target_Value_Type>;
-            };
-
             template<typename Container_Type, typename Fn> requires (
-            std::is_rvalue_reference_v < Container_Type &&> && !std::is_same_v<
+                std::is_rvalue_reference_v<Container_Type &&> && !std::is_same_v<
                     typename std::remove_cvref_t<Container_Type>::value_type,
                     std::invoke_result_t<Fn, typename std::remove_cvref_t<Container_Type>::value_type>>)
 
             constexpr auto operator()(Container_Type &&container, Fn &&fn) const {
-                using target_container_type = typename
-                fill_template<std::invoke_result_t < Fn, typename std::remove_cvref_t<Container_Type>::value_type>,
-                std::remove_cvref_t < Container_Type >> ::type;
+                using container_type = std::remove_cvref_t<Container_Type>;
+                using original_value_type = typename container_type::value_type;
+                using invoke_result_type = std::remove_cvref_t<std::invoke_result_t<Fn, original_value_type>>;
+                using target_container_type = ywl::basic::exchange_template_type_t<
+                    invoke_result_type,
+                    original_value_type,
+                    container_type>;
+                // fill_template<std::invoke_result_t < Fn, typename std::remove_cvref_t<Container_Type>::value_type>,
+                // std::remove_cvref_t < Container_Type >> ::type;
 
                 target_container_type target_container;
 
@@ -226,7 +224,7 @@ namespace ywl::overloads {
             template<typename Container_Type, typename Fn>
             constexpr decltype(auto) operator()(Container_Type &&container, Fn &&fn) const {
                 for (auto &&x: container) {
-                    fn(ywl::basic::forward_value_based_on_container<Container_Type&&>(x));
+                    fn(ywl::basic::forward_value_based_on_container<Container_Type &&>(x));
                 }
                 return container;
             }
@@ -240,7 +238,7 @@ namespace ywl::overloads {
 }
 
 export template<typename Target_Type, std::convertible_to<const ywl::overloads::pipe_flag_t &> Flag_Type>
-requires std::invocable<Flag_Type, Target_Type>
+    requires std::invocable<Flag_Type, Target_Type>
 constexpr decltype(auto) operator|(Target_Type &&target, Flag_Type &&fn) {
     return fn(std::forward<Target_Type>(target));
 }
