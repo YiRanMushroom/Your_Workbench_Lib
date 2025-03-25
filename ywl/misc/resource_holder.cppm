@@ -585,7 +585,7 @@ namespace ywl::misc {
             reset();
         }
 
-        explicit constexpr unique_owner_default(value_type value) : value{value} {}
+        constexpr unique_owner_default(value_type value) : value{value} {}
 
     private:
         value_type value;
@@ -654,7 +654,7 @@ namespace ywl::misc {
             }
         }
 
-        explicit constexpr unique_owner_optional(value_type value) : value{value} {}
+        constexpr unique_owner_optional(value_type value) : value{value} {}
 
     private:
         std::optional<value_type> value;
