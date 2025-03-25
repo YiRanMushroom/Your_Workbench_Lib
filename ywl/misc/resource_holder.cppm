@@ -560,15 +560,7 @@ namespace ywl::misc {
             return value;
         }
 
-        constexpr const value_type &operator*() const {
-            return value;
-        }
-
         constexpr value_type &get() {
-            return value;
-        }
-
-        constexpr value_type &operator*() {
             return value;
         }
 
@@ -576,7 +568,7 @@ namespace ywl::misc {
             return value != default_value;
         }
 
-        constexpr operator bool() const { // NOLINT
+        constexpr explicit operator bool() const { // NOLINT
             return has_value();
         }
 
@@ -641,15 +633,11 @@ namespace ywl::misc {
             return *value;
         }
 
-        constexpr const value_type &operator*() const {
-            return *value;
-        }
-
         constexpr bool has_value() const {
             return value.has_value();
         }
 
-        constexpr operator bool() const {
+        constexpr explicit operator bool() const {
             return has_value();
         }
 
