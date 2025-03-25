@@ -662,10 +662,6 @@ namespace ywl::misc {
 
     export template<typename T>
     struct inject_unique_holder_visible {
-        static_assert(requires(T t) {
-            t.unique_holder_instance();
-        }, "T must have a member function unique_holder_instance()");
-
         constexpr decltype(auto) get() const {
             return static_cast<const T *>(this)->unique_holder_instance().get();
         }
