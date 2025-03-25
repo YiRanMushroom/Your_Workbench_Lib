@@ -564,6 +564,14 @@ namespace ywl::misc {
             return value;
         }
 
+        constexpr value_type &get() {
+            return value;
+        }
+
+        constexpr value_type &operator*() {
+            return value;
+        }
+
         [[nodiscard]] constexpr bool has_value() const {
             return value != default_value;
         }
