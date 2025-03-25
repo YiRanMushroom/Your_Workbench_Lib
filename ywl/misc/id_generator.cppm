@@ -1,6 +1,7 @@
 export module ywl.misc.id_generator;
 
 import ywl.std.prelude;
+import ywl.basic.exceptions;
 
 namespace ywl::misc {
     export template<typename T = uint64_t, T default_value = T{}> requires requires(T t) { ++t; std::numeric_limits<T>::max(); }
@@ -38,7 +39,7 @@ namespace ywl::misc {
             }
 
             if (current_id == std::numeric_limits<T>::max()) {
-                throw std::runtime_error("No more ids available.");
+                throw ywl::basic::runtime_error("No more ids available.");
             }
 
             ++current_id;
@@ -46,13 +47,10 @@ namespace ywl::misc {
             return current_id;
         }
 
-        constexpr void free(T &&t) {
+        constexpr void free(T t) {
             // if t is in freed_ids, the behavior is undefined
             // if t is default_value, do nothing
-            if (t != default_value) {
-                freed_ids.push_back(std::move(t));
-                t = default_value;
-            }
+            freed_ids.emplace_back(std::move(t));
         }
     };
 }
