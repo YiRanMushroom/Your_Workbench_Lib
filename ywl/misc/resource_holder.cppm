@@ -5,7 +5,7 @@ import ywl.basic.exceptions;
 import ywl.basic.helpers;
 
 namespace ywl::misc {
-    export template<typename T>
+    /*export template<typename T>
     concept is_unique_resource_holder_hint_type = requires
     {
         typename T::holder_storage_type;
@@ -516,7 +516,7 @@ namespace ywl::misc {
             holder.control_block = control_block->provide_shared();
             return holder;
         }
-    };
+    };*/
 
     export template<typename T, typename DeleteType = basic::nothing_fn_t, T default_value = T{}>
     class unique_owner_default {
@@ -524,8 +524,7 @@ namespace ywl::misc {
         using value_type = T;
         using delete_type = DeleteType;
 
-        constexpr unique_owner_default() : value{default_value} {
-        }
+        constexpr unique_owner_default() : value{default_value} {}
 
         constexpr static unique_owner_default from_exchanged(value_type &&value) {
             return unique_owner_default{std::exchange(value, default_value)};
@@ -586,10 +585,9 @@ namespace ywl::misc {
             reset();
         }
 
-    private:
-        explicit constexpr unique_owner_default(value_type value) : value{value} {
-        }
+        explicit constexpr unique_owner_default(value_type value) : value{value} {}
 
+    private:
         value_type value;
     };
 
@@ -613,8 +611,7 @@ namespace ywl::misc {
 
         constexpr unique_owner_optional(unique_owner_optional &&other) noexcept : value{
             std::exchange(other.value, std::optional<value_type>{})
-        } {
-        }
+        } {}
 
         constexpr unique_owner_optional &operator=(const unique_owner_optional &) = delete;
 
@@ -657,10 +654,28 @@ namespace ywl::misc {
             }
         }
 
+        explicit constexpr unique_owner_optional(value_type value) : value{value} {}
+
     private:
-        explicit constexpr unique_owner_optional(value_type value) : value{value} {
+        std::optional<value_type> value;
+    };
+
+    export template<typename T>
+    struct inject_unique_holder_visible {
+        static_assert(requires(T t) {
+            t.unique_holder_instance();
+        }, "T must have a member function unique_holder_instance()");
+
+        constexpr decltype(auto) get() const {
+            return static_cast<const T *>(this)->unique_holder_instance().get();
         }
 
-        std::optional<value_type> value;
+        constexpr bool has_value() const {
+            return static_cast<const T *>(this)->unique_holder_instance().has_value();
+        }
+
+        void reset() {
+            static_cast<T *>(this)->unique_holder_instance().reset();
+        }
     };
 }
