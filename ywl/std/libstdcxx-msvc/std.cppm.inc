@@ -11,9 +11,7 @@
 // utils/generate_libcxx_cppm_in.py
 // DO NOT MODIFY!
 
-module;
-
-#include <__config>
+#include "__fake_config.h"
 
 // The headers of Table 24: C++ library headers [tab:headers.cpp]
 // and the headers of Table 25: C++ headers for C library facilities [tab:headers.cpp.c]
@@ -64,7 +62,9 @@ module;
 #include <execution>
 #include <expected>
 #include <filesystem>
+#if __has_include(<flat_map>)
 #include <flat_map>
+#endif
 #include <format>
 #include <forward_list>
 #if _LIBCPP_HAS_LOCALIZATION
@@ -148,7 +148,6 @@ module;
 #include <valarray>
 #include <variant>
 #include <vector>
-#include <version>
 
 // *** Headers not yet available ***
 //
@@ -194,7 +193,7 @@ module;
 #  endif // __has_include(<text_encoding>)
 #endif // _WIN32
 
-export module libcxx.std;
+export module build_std;
 
 #include "std/algorithm.inc"
 #include "std/any.inc"
@@ -237,7 +236,9 @@ export module libcxx.std;
 #include "std/execution.inc"
 #include "std/expected.inc"
 #include "std/filesystem.inc"
+#if __has_include(<flat_map>)
 #include "std/flat_map.inc"
+#endif
 #include "std/flat_set.inc"
 #include "std/format.inc"
 #include "std/forward_list.inc"
@@ -306,4 +307,3 @@ export module libcxx.std;
 #include "std/variant.inc"
 #include "std/vector.inc"
 #include "std/version.inc"
-

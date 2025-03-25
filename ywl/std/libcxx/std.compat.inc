@@ -11,8 +11,6 @@
 // utils/generate_libcxx_cppm_in.py
 // DO NOT MODIFY!
 
-module;
-
 #include <__config>
 
 // The headers of Table 24: C++ library headers [tab:headers.cpp]
@@ -85,8 +83,8 @@ module;
 #  endif // __has_include(<text_encoding>)
 #endif // _WIN32
 
-export module libcxx.std.compat;
-export import libcxx.std;
+export module build_std.compat;
+export import build_std;
 
 
 #include "std.compat/cassert.inc"
