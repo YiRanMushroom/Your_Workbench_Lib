@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 export namespace std {
-#if 0
+#if __has_include(<stacktrace>)
   // [stacktrace.entry], class stacktrace_­entry
   using std::stacktrace_entry;
 

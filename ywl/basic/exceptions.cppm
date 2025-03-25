@@ -13,8 +13,10 @@ import ywl.std.prelude;
 import ywl.basic.string_literal;
 
 namespace ywl::basic {
-#ifdef _WIN32
-    std::string get_stacktrace() {
+    std::optional<std::string> get_stacktrace() {
+#if __has_include(<stacktrace>)
+        return std::format("{}", std::stacktrace::current());
+#elifdef  _WIN32
         constexpr int max_frames = 128;
         void *stack[max_frames];
         USHORT frames = CaptureStackBackTrace(0, max_frames, stack, nullptr);
@@ -60,9 +62,11 @@ namespace ywl::basic {
 
         SymCleanup(process);
         return ss.str();
+#else
+        return {};
+#endif
     }
 
-#endif
 
     export class ywl_exception_base : public std::exception {
         std::string message;
@@ -78,11 +82,7 @@ namespace ywl::basic {
                 //, std::stacktrace stacktrace = std::stacktrace::current()
         )
         noexcept: message{std::move(message)}, location{std::move(location)}, stacktrace{
-#ifdef _WIN32
                 get_stacktrace()
-#else
-                std::nullopt
-#endif
         }
         // ,stacktrace{std::move(stacktrace)}
         {

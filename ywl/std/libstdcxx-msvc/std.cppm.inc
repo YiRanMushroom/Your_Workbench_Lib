@@ -123,6 +123,9 @@
 #  include <sstream>
 #endif
 #include <stack>
+#if __has_include(<stacktrace>)
+#include <stacktrace>
+#endif
 #include <stdexcept>
 #include <stop_token>
 #if _LIBCPP_HAS_LOCALIZATION
