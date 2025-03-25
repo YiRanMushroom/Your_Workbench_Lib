@@ -22,7 +22,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
 
-add_library(${PROJECT_NAME} ${MODULES})
+add_library(${PROJECT_NAME} ${MODULES}
+        ywl/std_alias.ixx)
 
 target_sources(${PROJECT_NAME}
         PUBLIC
