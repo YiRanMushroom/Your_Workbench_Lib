@@ -33,3 +33,14 @@ YWL provides utility extensions and enhancements to the C++ standard library, wi
 ## License
 
 - This project is licensed under the MIT License - see the [LICENSE](LICENSE)  file for details
+## Third Party Notices
+
+- **This project includes code from the LLVM Project**
+  - Files under `ywl/std/build_std.compat.cppm` and related compatibility headers
+  - Modified files:
+    - `ywl/std/build_std.compat.cppm`, `ywl/std/build_std.cppm`: Modified from std.cppm and std.compat.cppm in libc++ source code, to provide a fake implementation for libstdc++ based on the libc++ implementation
+    - `libcxx/*`: Not modified
+    - `libstdcxx-msvc/*`: Modified for libstdc++ msvcrt support
+  - Original files are part of the LLVM Project, licensed under Apache License 2.0 with LLVM Exception
+  - See https://llvm.org/LICENSE.txt for license details
+  - Modifications Copyright (c) 2025 Yiran Wang under MIT License
