@@ -22,15 +22,6 @@ YWL provides utility extensions and enhancements to the C++ standard library, wi
 - **Additional Features**
     - Add a tiny virtual machine system which handles uncaught exceptions and registers signal handlers, notice that the virtual machine system might be extended further to support resources management and other features
 
-## Key Features
-
-- Full C++20 modules support
-- Modern C++ design patterns
-- STL-style implementation
-- Easy-to-use printing facilities
-- Lightweight and modular
-- Focuses on small project usage
-
 ## Requirements
 
 - C++23 clang with libc++ or libstdc++
@@ -38,3 +29,7 @@ YWL provides utility extensions and enhancements to the C++ standard library, wi
 ## Installation
 
 - Please use CMake fetch content and link the library to your project, the modules should be automatically imported into your project
+
+## License
+
+- This project is licensed under the MIT License - see the [LICENSE](LICENSE)  file for details
