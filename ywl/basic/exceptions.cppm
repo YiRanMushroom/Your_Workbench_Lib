@@ -1,5 +1,7 @@
 module;
 
+#include <version>
+
 #ifdef _WIN32
 
 #include <windows.h>
@@ -14,7 +16,7 @@ import ywl.basic.string_literal;
 
 namespace ywl::basic {
     std::optional<std::string> get_stacktrace() {
-#if __has_include(<stacktrace>)
+#if (__has_include(<stacktrace>) && !defined(__GLIBCXX__))
         return std::format("{}", std::stacktrace::current());
 #elifdef  _WIN32
         constexpr int max_frames = 128;

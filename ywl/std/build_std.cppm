@@ -97,7 +97,9 @@ module;
 #  include <locale>
 #endif
 #include <map>
+
 #include <mdspan>
+
 #include <memory>
 #include <memory_resource>
 #include <mutex>
@@ -623,6 +625,330 @@ export module build_std;
 #include "libstdcxx-msvc/std/vector.inc"
 #include "libstdcxx-msvc/std/version.inc"
 
-#elif
+#elif defined(__GLIBCXX__)
+
+#include "libstdcxx-gnu/__fake_config.h"
+
+// The headers of Table 24: C++ library headers [tab:headers.cpp]
+// and the headers of Table 25: C++ headers for C library facilities [tab:headers.cpp.c]
+#include <algorithm>
+#include <any>
+#include <array>
+#if _LIBCPP_HAS_ATOMIC_HEADER
+#  include <atomic>
+#endif
+#include <barrier>
+#include <bit>
+#include <bitset>
+#include <cassert>
+#include <cctype>
+#include <cerrno>
+#include <cfenv>
+#include <cfloat>
+#include <charconv>
+#include <chrono>
+#include <cinttypes>
+#include <climits>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <clocale>
+#endif
+#include <cmath>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <codecvt>
+#endif
+#include <compare>
+#include <complex>
+#include <concepts>
+#include <condition_variable>
+#include <coroutine>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <cuchar>
+#include <cwchar>
+#include <cwctype>
+#include <deque>
+#include <exception>
+#include <execution>
+#include <expected>
+#include <filesystem>
+#if __has_include(<flat_map>)
+#include <flat_map>
+#endif
+#include <format>
+#include <forward_list>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <fstream>
+#endif
+#include <functional>
+#include <future>
+#include <initializer_list>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <iomanip>
+#endif
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <ios>
+#endif
+#include <iosfwd>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <iostream>
+#endif
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <istream>
+#endif
+#include <iterator>
+#include <latch>
+#include <limits>
+#include <list>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <locale>
+#endif
+#include <map>
+#if __has_include(<mdspan>)
+#include <mdspan>
+#endif
+#include <memory>
+#include <memory_resource>
+#include <mutex>
+#include <new>
+#include <numbers>
+#include <numeric>
+#include <optional>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <ostream>
+#endif
+#if __has_include(<print>)
+#include <print>
+#endif
+#include <queue>
+#include <random>
+#include <ranges>
+#include <ratio>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <regex>
+#endif
+#include <scoped_allocator>
+#include <semaphore>
+#include <set>
+#include <shared_mutex>
+#include <source_location>
+#include <span>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <sstream>
+#endif
+#include <stack>
+#if __has_include(<stacktrace>)
+#include <stacktrace>
+#endif
+#include <stdexcept>
+#include <stop_token>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <streambuf>
+#endif
+#include <string>
+#include <string_view>
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <strstream>
+#endif
+#if _LIBCPP_HAS_LOCALIZATION
+#  include <syncstream>
+#endif
+#include <system_error>
+#include <thread>
+#include <tuple>
+#include <type_traits>
+#include <typeindex>
+#include <typeinfo>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <valarray>
+#include <variant>
+#include <vector>
+
+#if __has_include(<spanstream>)
+#include <spanstream>
+#endif
+
+#if __has_include(<stdfloat>)
+#include <stdfloat>
+#endif
+
+// *** Headers not yet available ***
+//
+// This validation is mainly to catch when a new header is added but adding the
+// corresponding .inc file is forgotten. However, the check based on __has_include
+// alone doesn't work on Windows because the Windows SDK is on the include path,
+// and that means the MSVC STL headers can be found as well, tricking __has_include
+// into thinking that libc++ provides the header.
+//
+#ifndef _WIN32
+#  if __has_include(<debugging>)
+#    error "please update the header information for <debugging> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<debugging>)
+#  if __has_include(<flat_set>)
+#    error "please update the header information for <flat_set> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<flat_set>)
+#  if __has_include(<generator>)
+#    error "please update the header information for <generator> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<generator>)
+#  if __has_include(<hazard_pointer>)
+#    error "please update the header information for <hazard_pointer> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<hazard_pointer>)
+#  if __has_include(<inplace_vector>)
+#    error "please update the header information for <inplace_vector> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<inplace_vector>)
+#  if __has_include(<linalg>)
+#    error "please update the header information for <linalg> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<linalg>)
+#  if __has_include(<rcu>)
+#    error "please update the header information for <rcu> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<rcu>)
+// #  if __has_include(<spanstream>)
+// #    error "please update the header information for <spanstream> in headers_not_available in utils/libcxx/header_information.py"
+// #  endif // __has_include(<spanstream>)
+// #  if __has_include(<stacktrace>)
+// #    error "please update the header information for <stacktrace> in headers_not_available in utils/libcxx/header_information.py"
+// #  endif // __has_include(<stacktrace>)
+// #  if __has_include(<stdfloat>)
+// #    error "please update the header information for <stdfloat> in headers_not_available in utils/libcxx/header_information.py"
+// #  endif // __has_include(<stdfloat>)
+#  if __has_include(<text_encoding>)
+#    error "please update the header information for <text_encoding> in headers_not_available in utils/libcxx/header_information.py"
+#  endif // __has_include(<text_encoding>)
+#endif // _WIN32
+
+export module build_std;
+
+#include "libstdcxx-gnu/std/algorithm.inc"
+#include "libstdcxx-gnu/std/any.inc"
+#include "libstdcxx-gnu/std/array.inc"
+#include "libstdcxx-gnu/std/atomic.inc"
+#include "libstdcxx-gnu/std/barrier.inc"
+#include "libstdcxx-gnu/std/bit.inc"
+#include "libstdcxx-gnu/std/bitset.inc"
+#include "libstdcxx-gnu/std/cassert.inc"
+#include "libstdcxx-gnu/std/cctype.inc"
+#include "libstdcxx-gnu/std/cerrno.inc"
+#include "libstdcxx-gnu/std/cfenv.inc"
+#include "libstdcxx-gnu/std/cfloat.inc"
+#include "libstdcxx-gnu/std/charconv.inc"
+#include "libstdcxx-gnu/std/chrono.inc"
+#include "libstdcxx-gnu/std/cinttypes.inc"
+#include "libstdcxx-gnu/std/climits.inc"
+#include "libstdcxx-gnu/std/clocale.inc"
+#include "libstdcxx-gnu/std/cmath.inc"
+#include "libstdcxx-gnu/std/codecvt.inc"
+#include "libstdcxx-gnu/std/compare.inc"
+#include "libstdcxx-gnu/std/complex.inc"
+#include "libstdcxx-gnu/std/concepts.inc"
+#include "libstdcxx-gnu/std/condition_variable.inc"
+#include "libstdcxx-gnu/std/coroutine.inc"
+#include "libstdcxx-gnu/std/csetjmp.inc"
+#include "libstdcxx-gnu/std/csignal.inc"
+#include "libstdcxx-gnu/std/cstdarg.inc"
+#include "libstdcxx-gnu/std/cstddef.inc"
+#include "libstdcxx-gnu/std/cstdint.inc"
+#include "libstdcxx-gnu/std/cstdio.inc"
+#include "libstdcxx-gnu/std/cstdlib.inc"
+#include "libstdcxx-gnu/std/cstring.inc"
+#include "libstdcxx-gnu/std/ctime.inc"
+#include "libstdcxx-gnu/std/cuchar.inc"
+#include "libstdcxx-gnu/std/cwchar.inc"
+#include "libstdcxx-gnu/std/cwctype.inc"
+#include "libstdcxx-gnu/std/deque.inc"
+#include "libstdcxx-gnu/std/exception.inc"
+#include "libstdcxx-gnu/std/execution.inc"
+#include "libstdcxx-gnu/std/expected.inc"
+#include "libstdcxx-gnu/std/filesystem.inc"
+#if __has_include(<flat_map>)
+#include "libstdcxx-gnu/std/flat_map.inc"
+#endif
+#include "libstdcxx-gnu/std/flat_set.inc"
+#include "libstdcxx-gnu/std/format.inc"
+#include "libstdcxx-gnu/std/forward_list.inc"
+#include "libstdcxx-gnu/std/fstream.inc"
+#include "libstdcxx-gnu/std/functional.inc"
+#include "libstdcxx-gnu/std/future.inc"
+#include "libstdcxx-gnu/std/generator.inc"
+#include "libstdcxx-gnu/std/hazard_pointer.inc"
+#include "libstdcxx-gnu/std/initializer_list.inc"
+#include "libstdcxx-gnu/std/iomanip.inc"
+#include "libstdcxx-gnu/std/ios.inc"
+#include "libstdcxx-gnu/std/iosfwd.inc"
+#include "libstdcxx-gnu/std/iostream.inc"
+#include "libstdcxx-gnu/std/istream.inc"
+#include "libstdcxx-gnu/std/iterator.inc"
+#include "libstdcxx-gnu/std/latch.inc"
+#include "libstdcxx-gnu/std/limits.inc"
+#include "libstdcxx-gnu/std/list.inc"
+#include "libstdcxx-gnu/std/locale.inc"
+#include "libstdcxx-gnu/std/map.inc"
+#if __has_include(<mdspan>)
+#include "libstdcxx-gnu/std/mdspan.inc"
+#endif
+#include "libstdcxx-gnu/std/memory.inc"
+#include "libstdcxx-gnu/std/memory_resource.inc"
+#include "libstdcxx-gnu/std/mutex.inc"
+#include "libstdcxx-gnu/std/new.inc"
+#include "libstdcxx-gnu/std/numbers.inc"
+#include "libstdcxx-gnu/std/numeric.inc"
+#include "libstdcxx-gnu/std/optional.inc"
+#include "libstdcxx-gnu/std/ostream.inc"
+#if __has_include(<print>)
+#include "libstdcxx-gnu/std/print.inc"
+#endif
+#include "libstdcxx-gnu/std/queue.inc"
+#include "libstdcxx-gnu/std/random.inc"
+#include "libstdcxx-gnu/std/ranges.inc"
+#include "libstdcxx-gnu/std/ratio.inc"
+#include "libstdcxx-gnu/std/rcu.inc"
+#include "libstdcxx-gnu/std/regex.inc"
+#include "libstdcxx-gnu/std/scoped_allocator.inc"
+#include "libstdcxx-gnu/std/semaphore.inc"
+#include "libstdcxx-gnu/std/set.inc"
+#include "libstdcxx-gnu/std/shared_mutex.inc"
+#include "libstdcxx-gnu/std/source_location.inc"
+#include "libstdcxx-gnu/std/span.inc"
+#if __has_include(<spanstream>)
+#include "libstdcxx-gnu/std/spanstream.inc"
+#endif
+#include "libstdcxx-gnu/std/sstream.inc"
+#include "libstdcxx-gnu/std/stack.inc"
+#include "libstdcxx-gnu/std/stacktrace.inc"
+#include "libstdcxx-gnu/std/stdexcept.inc"
+#if __has_include(<stdfloat>)
+#include "libstdcxx-gnu/std/stdfloat.inc"
+#endif
+#include "libstdcxx-gnu/std/stop_token.inc"
+#include "libstdcxx-gnu/std/streambuf.inc"
+#include "libstdcxx-gnu/std/string.inc"
+#include "libstdcxx-gnu/std/string_view.inc"
+#include "libstdcxx-gnu/std/strstream.inc"
+#include "libstdcxx-gnu/std/syncstream.inc"
+#include "libstdcxx-gnu/std/system_error.inc"
+#include "libstdcxx-gnu/std/text_encoding.inc"
+#include "libstdcxx-gnu/std/thread.inc"
+#include "libstdcxx-gnu/std/tuple.inc"
+#include "libstdcxx-gnu/std/type_traits.inc"
+#include "libstdcxx-gnu/std/typeindex.inc"
+#include "libstdcxx-gnu/std/typeinfo.inc"
+#include "libstdcxx-gnu/std/unordered_map.inc"
+#include "libstdcxx-gnu/std/unordered_set.inc"
+#include "libstdcxx-gnu/std/utility.inc"
+#include "libstdcxx-gnu/std/valarray.inc"
+#include "libstdcxx-gnu/std/variant.inc"
+#include "libstdcxx-gnu/std/vector.inc"
+#include "libstdcxx-gnu/std/version.inc"
+
+#include "libstdcxx-gnu/misc.inc"
+
+#else
 #error "Unsupported std library"
 #endif

@@ -5,6 +5,7 @@ module;
 #elif defined(_MSC_VER)
 #include <yvals_core.h>
 #include <time.h>
+#elif defined(__GLIBCXX__)
 #else
 #error("Unsupported std library")
 #endif
