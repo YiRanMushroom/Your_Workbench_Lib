@@ -45,6 +45,8 @@
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wmacro-redefined"
 
+#define _LIBCPP_STD_VER 23
+
 #endif //__FAKE_CONFIG_H
 
 #endif
