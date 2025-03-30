@@ -16,7 +16,7 @@ import ywl.basic.string_literal;
 
 namespace ywl::basic {
     std::optional<std::string> get_stacktrace() {
-#if (__has_include(<stacktrace>) && !defined(__GLIBCXX__))
+#if (__has_include(<stacktrace>) && defined(_MSC_VER))
         return std::format("{}", std::stacktrace::current());
 #elifdef  _WIN32
         constexpr int max_frames = 128;
@@ -63,6 +63,10 @@ namespace ywl::basic {
         }
 
         SymCleanup(process);
+        return ss.str();
+#elif __has_include(<stacktrace>) && defined(__GLIBCXX__)
+        std::stringstream ss;
+        ss << std::stacktrace::current();
         return ss.str();
 #else
         return {};
