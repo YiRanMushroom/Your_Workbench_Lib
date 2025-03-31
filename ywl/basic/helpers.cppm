@@ -24,19 +24,16 @@ namespace ywl::basic {
     };
 
     export template<auto *fn>
-    struct function_t : public function_t_crtp<fn, decltype(fn)> {
-    };
+    struct function_t : public function_t_crtp<fn, decltype(fn)> {};
 
 
     export struct nothing_fn_t {
-        constexpr void operator()(auto &&...) const noexcept {
-        }
+        constexpr void operator()(auto &&...) const noexcept {}
     };
 
     template<size_t N, size_t... Is>
     struct make_reverse_index_sequence_impl :
-            make_reverse_index_sequence_impl<N - 1, Is..., N - 1> {
-    };
+            make_reverse_index_sequence_impl<N - 1, Is..., N - 1> {};
 
     template<size_t... Is>
     struct make_reverse_index_sequence_impl<0, Is...> {
@@ -80,8 +77,7 @@ namespace ywl::basic {
         variable_type m_variable;
 
     public:
-        constant_with_variable_t(variable_type var) noexcept : m_variable{std::move(var)} {
-        }
+        constant_with_variable_t(variable_type var) noexcept : m_variable{std::move(var)} {}
 
         static constexpr Constant_Type constant() noexcept {
             return m_constant;
@@ -118,7 +114,7 @@ namespace ywl::basic {
     }();
 
     export template<typename CheckType, typename... Types>
-    constexpr bool type_in_tuple_v<CheckType, std::tuple<Types...>> = (std::same_as<CheckType, Types> || ...);
+    constexpr bool type_in_tuple_v<CheckType, std::tuple<Types...> > = (std::same_as<CheckType, Types> || ...);
 
     template<typename... Types>
     struct unique_tuple_impl;
@@ -136,7 +132,7 @@ namespace ywl::basic {
     template<typename First, typename... Rest>
     struct unique_tuple_impl<First, Rest...> {
         using type = std::conditional_t<
-            type_in_tuple_v<First, std::tuple<Rest...>>,
+            type_in_tuple_v<First, std::tuple<Rest...> >,
             typename unique_tuple_impl<Rest...>::type,
             decltype(
                 std::tuple_cat(
@@ -154,12 +150,12 @@ namespace ywl::basic {
     };
 
     export template<typename... Types>
-    struct unique_tuple_from_tuple<std::tuple<Types...>> {
+    struct unique_tuple_from_tuple<std::tuple<Types...> > {
         using type = unique_tuple_impl_t<Types...>;
     };
 
     export template<typename... Types>
-    using unique_tuple_from_tuple_t = typename unique_tuple_from_tuple<std::tuple<Types...>>::type;
+    using unique_tuple_from_tuple_t = typename unique_tuple_from_tuple<std::tuple<Types...> >::type;
 
     export template<typename... Types>
     using unique_tuple_t = unique_tuple_impl_t<Types...>;
@@ -186,20 +182,19 @@ namespace ywl::basic {
     };
 
     template<typename... Types>
-    struct unique_variant_from_tuple<std::tuple<Types...>> {
+    struct unique_variant_from_tuple<std::tuple<Types...> > {
         using type = unique_variant_impl_t<Types...>;
     };
 
     export template<typename... Types>
-    using unique_variant_from_tuple_t = typename unique_variant_from_tuple<std::tuple<Types...>>::type;
+    using unique_variant_from_tuple_t = typename unique_variant_from_tuple<std::tuple<Types...> >::type;
 
     export template<typename... Types>
     using unique_variant_t = unique_variant_impl_t<Types...>;
 
     export template<typename... Fns>
     struct overload_fns : public Fns... {
-        overload_fns(const Fns &...) {
-        }
+        overload_fns(const Fns &...) {}
     };
 
     export template<typename Container_Type, typename Value_Type>
@@ -256,9 +251,10 @@ namespace ywl::basic {
         using type = Target_Type;
     };
 
-    export template<typename Target_Type, typename Original_Type, template<typename...> typename Container_Type, typename...
-        Types>
-    struct exchange_template_type<Target_Type, Original_Type, Container_Type<Types...>> {
+    export template<typename Target_Type, typename Original_Type, template<typename...> typename Container_Type,
+        typename... Types>
+        requires (!std::is_same_v<Container_Type<Types...>, Original_Type>)
+    struct exchange_template_type<Target_Type, Original_Type, Container_Type<Types...> > {
         using type = Container_Type<typename exchange_template_type<Target_Type, Original_Type, Types>::type...>;
     };
 
