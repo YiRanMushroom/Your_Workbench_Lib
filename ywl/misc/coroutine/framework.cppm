@@ -114,6 +114,7 @@ namespace ywl::misc::coroutine {
                     cancel_all_dependencies_of(other);
                     m_can_be_finished_immediately.insert(other);
                 }
+                // ywl::utils::printf_ln("Coroutine {} is cancelled.", handle.address()).flush();
                 m_can_be_finished_immediately.insert(handle);
             }
         }
@@ -137,6 +138,7 @@ namespace ywl::misc::coroutine {
 
                 for (const auto &other: depend_on.at(issuer)) {
                     cancel_all_dependencies_of(other);
+                    // ywl::utils::printf_ln("Coroutine {} is cancelled.", other.address()).flush();
                     m_can_be_finished_immediately.insert(other);
                 }
 
@@ -146,7 +148,7 @@ namespace ywl::misc::coroutine {
                     m_queue_elements.insert(issuer);
                     depend_on.erase(issuer);
 
-                    ywl::utils::printf_ln("Coroutine {} is resumed.", issuer.address()).flush();
+                    // ywl::utils::printf_ln("Coroutine {} is resumed.", issuer.address()).flush();
 
                 }
             } else {
@@ -157,7 +159,7 @@ namespace ywl::misc::coroutine {
                     m_queue.push(issuer);
                     m_queue_elements.insert(issuer);
 
-                    ywl::utils::printf_ln("Coroutine {} is resumed.", issuer.address()).flush();
+                    // ywl::utils::printf_ln("Coroutine {} is resumed.", issuer.address()).flush();
                 }
 
                 dependency_of.erase(handle);
@@ -219,7 +221,7 @@ namespace ywl::misc::coroutine {
 
         constexpr void schedule_dependency_all(std::coroutine_handle<> issuer, std::coroutine_handle<> task) override {
             std::lock_guard lock(m_mutex);
-            ywl::utils::printf_ln("Scheduling All dependency {} -> {}.", task.address(), issuer.address()).flush();
+
             assert(issuer != nullptr);
             m_queue.push(task);
             m_queue_elements.insert(task);
@@ -228,11 +230,15 @@ namespace ywl::misc::coroutine {
 
             dependency_of[task] = issuer;
             depend_on[issuer].insert(task);
+
+            if (m_can_be_finished_immediately.contains(issuer)) {
+                m_can_be_finished_immediately.insert(task);
+            }
         }
 
         constexpr void schedule_dependency_any(std::coroutine_handle<> issuer, std::coroutine_handle<> task) override {
             std::lock_guard lock(m_mutex);
-            ywl::utils::printf_ln("Scheduling Any dependency {} -> {}.", task.address(), issuer.address()).flush();
+            // ywl::utils::printf_ln("Scheduling Any dependency {} -> {}.", task.address(), issuer.address()).flush();
             need_any_rather_than_all.insert(issuer);
 
             m_queue_elements.erase(issuer);
@@ -241,6 +247,10 @@ namespace ywl::misc::coroutine {
             m_queue_elements.insert(task);
             dependency_of[task] = issuer;
             depend_on[issuer].insert(task);
+
+            if (m_can_be_finished_immediately.contains(issuer)) {
+                m_can_be_finished_immediately.insert(task);
+            }
         }
 
         constexpr void run() override {
@@ -292,7 +302,7 @@ namespace ywl::misc::coroutine {
                 }
 
                 try {
-                    ywl::utils::printf_ln("Coroutine {} is running.", handle.address()).flush();
+                    // ywl::utils::printf_ln("Coroutine {} is running.", handle.address()).flush();
                     m_unhandled_finished_tasks.push_back(
                         m_thread_pool.submit([co_handle = handle,
                             this_executor = this] {
@@ -318,6 +328,7 @@ namespace ywl::misc::coroutine {
                     cancel_all_dependencies_of(other);
                     m_can_be_finished_immediately.insert(other);
                 }
+                // ywl::utils::printf_ln("Coroutine {} is cancelled.", handle.address()).flush();
                 m_can_be_finished_immediately.insert(handle);
             }
         }
@@ -326,7 +337,6 @@ namespace ywl::misc::coroutine {
             std::lock_guard lock(m_mutex);
             if (m_can_be_finished_immediately.contains(handle)) {
                 m_can_be_finished_immediately.erase(handle);
-                // return;
             }
 
             if (!dependency_of.contains(handle)) {
@@ -343,11 +353,12 @@ namespace ywl::misc::coroutine {
                 for (const auto &other: depend_on.at(issuer)) {
                     cancel_all_dependencies_of(other);
                     m_can_be_finished_immediately.insert(other);
+                    // ywl::utils::printf_ln("Coroutine {} is cancelled.", other.address()).flush();
                 }
 
                 if (depend_on.at(issuer).empty()) {
                     need_any_rather_than_all.erase(issuer);
-                    ywl::utils::printf_ln("Coroutine {} is queued.", issuer.address()).flush();
+                    // ywl::utils::printf_ln("Coroutine {} is queued.", issuer.address()).flush();
                     m_queue.push(issuer);
                     m_queue_elements.insert(issuer);
                     depend_on.erase(issuer);
@@ -359,7 +370,7 @@ namespace ywl::misc::coroutine {
                     depend_on.erase(issuer);
                     m_queue.push(issuer);
                     m_queue_elements.insert(issuer);
-                    ywl::utils::printf_ln("Coroutine {} is queued.", issuer.address()).flush();
+                    // ywl::utils::printf_ln("Coroutine {} is queued.", issuer.address()).flush();
                 }
 
                 dependency_of.erase(handle);
@@ -465,7 +476,7 @@ namespace ywl::misc::coroutine {
         [[nodiscard]] constexpr T get_value() {
             auto optional = std::exchange(m_handle.promise().m_value, std::nullopt);
             if (!optional.has_value()) {
-                ywl::utils::err_printf_ln("Coroutine {} is not finished.", m_handle.address()).flush();
+                // ywl::utils::err_printf_ln("Coroutine {} is not finished.", m_handle.address()).flush();
                 throw ywl::basic::logic_error("value is not set");
             }
             return std::move(optional).value();
