@@ -400,6 +400,14 @@ namespace ywl::misc::coroutine {
                     ywl::utils::err_printf_ln("Coroutine {} is not finished.", handle.address()).flush();
                 }
             }
+
+            if (!m_unhandled_finished_tasks.empty()) {
+                ywl::utils::err_printf_ln("Warning: not all tasks were finished.").flush();
+            }
+
+            if (!m_can_be_finished_immediately.empty()) {
+                ywl::utils::err_printf_ln("Warning: not all tasks were finished.").flush();
+            }
         }
     };
 
