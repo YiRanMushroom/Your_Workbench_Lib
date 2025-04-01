@@ -60,6 +60,17 @@ namespace ywl::misc::coroutine {
             depend_on[issuer].insert(task);
         }
 
+        constexpr void schedule_dependency_any(std::coroutine_handle<> issuer, std::coroutine_handle<> task) override {
+            need_any_rather_than_all.insert(issuer);
+
+            m_queue_elements.erase(issuer);
+
+            m_queue.push(task);
+            m_queue_elements.insert(task);
+            dependency_of[task] = issuer;
+            depend_on[issuer].insert(task);
+        }
+
         constexpr void run() override {
             while (!m_queue.empty()) {
                 auto handle = m_queue.front();
@@ -134,6 +145,9 @@ namespace ywl::misc::coroutine {
                     m_queue.push(issuer);
                     m_queue_elements.insert(issuer);
                     depend_on.erase(issuer);
+
+                    ywl::utils::printf_ln("Coroutine {} is resumed.", issuer.address()).flush();
+
                 }
             } else {
                 depend_on.at(issuer).erase(handle);
@@ -142,21 +156,12 @@ namespace ywl::misc::coroutine {
                     depend_on.erase(issuer);
                     m_queue.push(issuer);
                     m_queue_elements.insert(issuer);
+
+                    ywl::utils::printf_ln("Coroutine {} is resumed.", issuer.address()).flush();
                 }
 
                 dependency_of.erase(handle);
             }
-        }
-
-        constexpr void schedule_dependency_any(std::coroutine_handle<> issuer, std::coroutine_handle<> task) override {
-            need_any_rather_than_all.insert(issuer);
-
-            m_queue_elements.erase(issuer);
-
-            m_queue.push(task);
-            m_queue_elements.insert(task);
-            dependency_of[task] = issuer;
-            depend_on[issuer].insert(task);
         }
 
         constexpr ~simple_co_executor() override {
@@ -214,12 +219,26 @@ namespace ywl::misc::coroutine {
 
         constexpr void schedule_dependency_all(std::coroutine_handle<> issuer, std::coroutine_handle<> task) override {
             std::lock_guard lock(m_mutex);
+            ywl::utils::printf_ln("Scheduling All dependency {} -> {}.", task.address(), issuer.address()).flush();
             assert(issuer != nullptr);
             m_queue.push(task);
             m_queue_elements.insert(task);
 
             m_queue_elements.erase(issuer);
 
+            dependency_of[task] = issuer;
+            depend_on[issuer].insert(task);
+        }
+
+        constexpr void schedule_dependency_any(std::coroutine_handle<> issuer, std::coroutine_handle<> task) override {
+            std::lock_guard lock(m_mutex);
+            ywl::utils::printf_ln("Scheduling Any dependency {} -> {}.", task.address(), issuer.address()).flush();
+            need_any_rather_than_all.insert(issuer);
+
+            m_queue_elements.erase(issuer);
+
+            m_queue.push(task);
+            m_queue_elements.insert(task);
             dependency_of[task] = issuer;
             depend_on[issuer].insert(task);
         }
@@ -273,6 +292,7 @@ namespace ywl::misc::coroutine {
                 }
 
                 try {
+                    ywl::utils::printf_ln("Coroutine {} is running.", handle.address()).flush();
                     m_unhandled_finished_tasks.push_back(
                         m_thread_pool.submit([co_handle = handle,
                             this_executor = this] {
@@ -306,7 +326,7 @@ namespace ywl::misc::coroutine {
             std::lock_guard lock(m_mutex);
             if (m_can_be_finished_immediately.contains(handle)) {
                 m_can_be_finished_immediately.erase(handle);
-                return;
+                // return;
             }
 
             if (!dependency_of.contains(handle)) {
@@ -327,6 +347,7 @@ namespace ywl::misc::coroutine {
 
                 if (depend_on.at(issuer).empty()) {
                     need_any_rather_than_all.erase(issuer);
+                    ywl::utils::printf_ln("Coroutine {} is queued.", issuer.address()).flush();
                     m_queue.push(issuer);
                     m_queue_elements.insert(issuer);
                     depend_on.erase(issuer);
@@ -338,22 +359,11 @@ namespace ywl::misc::coroutine {
                     depend_on.erase(issuer);
                     m_queue.push(issuer);
                     m_queue_elements.insert(issuer);
+                    ywl::utils::printf_ln("Coroutine {} is queued.", issuer.address()).flush();
                 }
 
                 dependency_of.erase(handle);
             }
-        }
-
-        constexpr void schedule_dependency_any(std::coroutine_handle<> issuer, std::coroutine_handle<> task) override {
-            std::lock_guard lock(m_mutex);
-            need_any_rather_than_all.insert(issuer);
-
-            m_queue_elements.erase(issuer);
-
-            m_queue.push(task);
-            m_queue_elements.insert(task);
-            dependency_of[task] = issuer;
-            depend_on[issuer].insert(task);
         }
 
         constexpr ~multithreaded_co_executor() override {
@@ -391,9 +401,10 @@ namespace ywl::misc::coroutine {
 
         struct promise_type {
         private:
-            std::optional<T> m_value;
 
         public:
+            std::optional<T> m_value;
+
             constexpr co_awaitable get_return_object() {
                 return co_awaitable{
                     std::coroutine_handle<promise_type>::from_promise(*this)
@@ -452,7 +463,12 @@ namespace ywl::misc::coroutine {
         }
 
         [[nodiscard]] constexpr T get_value() {
-            return m_handle.promise().get_value();
+            auto optional = std::exchange(m_handle.promise().m_value, std::nullopt);
+            if (!optional.has_value()) {
+                ywl::utils::err_printf_ln("Coroutine {} is not finished.", m_handle.address()).flush();
+                throw ywl::basic::logic_error("value is not set");
+            }
+            return std::move(optional).value();
         }
 
         [[nodiscard]] constexpr std::optional<T> get_value_optional() {
