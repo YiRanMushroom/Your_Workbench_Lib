@@ -402,6 +402,7 @@ namespace ywl::misc::coroutine {
 
         constexpr void resume_task(std::coroutine_handle<> handle) override {
             std::lock_guard lock(m_mutex);
+
             if (handle) {
                 m_queue.push(handle);
                 m_queue_elements.insert(handle);

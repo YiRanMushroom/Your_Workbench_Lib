@@ -94,8 +94,10 @@ namespace ywl::app::vm {
         return result;
     }
 
-    export template<std::derived_from<ywl::misc::coroutine::co_executor_base> Executor_Type>
-    constexpr int async_run(ywl::misc::coroutine::co_awaitable<int> &&async_main, auto &&... args) {
+    export template<
+        ywl::misc::coroutine::co_awaitable<int> (*async_main)(int, char **),
+        std::derived_from<ywl::misc::coroutine::co_executor_base> Executor_Type>
+    constexpr int async_run(int argc, char **argv, auto&&... args) {
         init_vm();
 
         auto co_context = ywl::misc::coroutine::co_context::from_executor<Executor_Type>(
@@ -104,7 +106,7 @@ namespace ywl::app::vm {
         int result = 0;
 
         try {
-            result = co_context.block_on(std::move(async_main));
+            result = co_context.block_on(async_main(argc, argv));
         } catch (std::exception &e) {
             ywl::utils::err_printf_ln(
                 "VM caught an uncaptured exception which is not handled by the provided main function:\n{}\nExiting...",
