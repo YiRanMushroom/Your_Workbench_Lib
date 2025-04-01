@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 
 export namespace std {
-#if 1
+#if _GLIBCXX_HAVE_STACKTRACE
   // [stacktrace.entry], class stacktrace_­entry
   using std::stacktrace_entry;
 
