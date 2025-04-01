@@ -79,6 +79,7 @@ namespace ywl::misc::coroutine {
 
                 if (m_can_be_finished_immediately.contains(handle)) {
                     m_can_be_finished_immediately.erase(handle);
+                    assert(!depend_on.contains(handle));
                     handle_finish(handle);
                     continue;
                 }
@@ -196,6 +197,7 @@ namespace ywl::misc::coroutine {
         std::recursive_mutex m_mutex;
         ywl::misc::multithreading::thread_pool m_thread_pool;
         std::list<std::future<std::coroutine_handle<>>> m_unhandled_finished_tasks;
+        std::unordered_set<std::coroutine_handle<>> m_can_be_finished_immediately;
 
     public:
         constexpr multithreaded_co_executor() = delete;
@@ -228,7 +230,7 @@ namespace ywl::misc::coroutine {
                     if (it->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
                         auto handle = it->get();
 
-                        if (handle.done() || m_cancelled_task.contains(handle)) {
+                        if (handle.done()) {
                             handle_finish(handle);
                         }
 
@@ -263,6 +265,13 @@ namespace ywl::misc::coroutine {
                     }
                 }
 
+                if (m_can_be_finished_immediately.contains(handle)) {
+                    m_can_be_finished_immediately.erase(handle);
+                    assert(!depend_on.contains(handle));
+                    handle_finish(handle);
+                    continue;
+                }
+
                 try {
                     m_unhandled_finished_tasks.push_back(
                         m_thread_pool.submit([co_handle = handle,
@@ -282,23 +291,21 @@ namespace ywl::misc::coroutine {
             }
         }
 
-        std::unordered_set<std::coroutine_handle<>> m_cancelled_task;
-
         constexpr void cancel_all_dependencies_of(std::coroutine_handle<> handle) {
             std::lock_guard lock(m_mutex);
             if (depend_on.contains(handle)) {
-                m_cancelled_task.insert(handle);
-                for (const auto &child: depend_on.at(handle)) {
-                    m_cancelled_task.insert(child);
-                    cancel_all_dependencies_of(child);
+                for (const auto &other: depend_on.at(handle)) {
+                    cancel_all_dependencies_of(other);
+                    m_can_be_finished_immediately.insert(other);
                 }
+                m_can_be_finished_immediately.insert(handle);
             }
         }
 
         constexpr void handle_finish(std::coroutine_handle<> handle) {
             std::lock_guard lock(m_mutex);
-            if (m_cancelled_task.contains(handle)) {
-                m_cancelled_task.erase(handle);
+            if (m_can_be_finished_immediately.contains(handle)) {
+                m_can_be_finished_immediately.erase(handle);
                 return;
             }
 
@@ -309,16 +316,20 @@ namespace ywl::misc::coroutine {
             auto issuer = dependency_of.at(handle);
 
             if (need_any_rather_than_all.contains(issuer)) {
+                assert(issuer);
                 depend_on.at(issuer).erase(handle);
                 dependency_of.erase(handle);
 
                 for (const auto &other: depend_on.at(issuer)) {
-                    m_cancelled_task.insert(other);
                     cancel_all_dependencies_of(other);
+                    m_can_be_finished_immediately.insert(other);
                 }
 
                 if (depend_on.at(issuer).empty()) {
-                    restart_task(issuer);
+                    need_any_rather_than_all.erase(issuer);
+                    m_queue.push(issuer);
+                    m_queue_elements.insert(issuer);
+                    depend_on.erase(issuer);
                 }
             } else {
                 depend_on.at(issuer).erase(handle);
@@ -331,13 +342,6 @@ namespace ywl::misc::coroutine {
 
                 dependency_of.erase(handle);
             }
-        }
-
-        constexpr void restart_task(std::coroutine_handle<> handle) {
-            depend_on.erase(handle);
-            need_any_rather_than_all.erase(handle);
-            m_queue_elements.insert(handle);
-            m_queue.push(handle);
         }
 
         constexpr void schedule_dependency_any(std::coroutine_handle<> issuer, std::coroutine_handle<> task) override {
