@@ -218,19 +218,18 @@ namespace ywl::misc::coroutine {
                         auto handle = it->get();
 
                         if (handle.done()) {
+                            //                            ywl::utils::printf_ln("Coroutine {} finished.", handle.address()).flush();
                             handle_finish(handle);
                         }
 
+                        //                        ywl::utils::printf_ln("Coroutine {} is not finished.", handle.address()).flush();
                         it = m_unhandled_finished_tasks.erase(it);
                     } else {
                         ++it;
                     }
                 }
 
-                std::coroutine_handle<> handle;
-
-                // scp
-                {
+                std::coroutine_handle<> handle; {
                     std::lock_guard lock(m_mutex);
                     if (m_queue.empty()) {
                         continue;
@@ -240,9 +239,6 @@ namespace ywl::misc::coroutine {
                     m_queue.pop();
 
                     if (!m_queue_elements.contains(handle) || !handle) {
-                        if (handle) {
-                            handle_finish(handle);
-                        }
                         continue;
                     }
 
@@ -277,17 +273,17 @@ namespace ywl::misc::coroutine {
         constexpr void cancel_all_dependencies_of(std::coroutine_handle<> handle) {
             std::lock_guard lock(m_mutex);
             if (depend_on.contains(handle)) {
-                for (const auto &other: depend_on.at(handle)) {
-                    if (m_queue_elements.contains(other))
-                        m_queue_elements.erase(other);
+                for (const auto &other: depend_on[handle]) {
+                    m_queue_elements.erase(other);
                     cancel_all_dependencies_of(other);
+                    dependency_of.erase(other);
                 }
+                depend_on.erase(handle);
             }
         }
 
         constexpr void handle_finish(std::coroutine_handle<> handle) {
             std::lock_guard lock(m_mutex);
-
             if (!dependency_of.contains(handle)) {
                 return;
             }
@@ -295,20 +291,21 @@ namespace ywl::misc::coroutine {
             auto issuer = dependency_of.at(handle);
 
             if (need_any_rather_than_all.contains(issuer)) {
+                assert(issuer);
                 depend_on.at(issuer).erase(handle);
+                dependency_of.erase(handle);
 
                 for (const auto &other: depend_on.at(issuer)) {
                     m_queue_elements.erase(other);
                     cancel_all_dependencies_of(other);
+                    dependency_of.erase(other);
                 }
 
-                if (depend_on.at(issuer).empty()) {
-                    depend_on.erase(issuer);
-                    m_queue.push(issuer);
-                    m_queue_elements.insert(issuer);
-                }
+                depend_on.erase(issuer);
+                need_any_rather_than_all.erase(issuer);
 
-                dependency_of.erase(handle);
+                m_queue.push(issuer);
+                m_queue_elements.insert(issuer);
             } else {
                 depend_on.at(issuer).erase(handle);
 
@@ -318,15 +315,6 @@ namespace ywl::misc::coroutine {
                     m_queue_elements.insert(issuer);
                 }
 
-                dependency_of.erase(handle);
-            }
-        }
-
-        void handle_cancelled_task(std::coroutine_handle<> handle) {
-            std::lock_guard lock(m_mutex);
-            if (handle) {
-                m_queue_elements.erase(handle);
-                cancel_all_dependencies_of(handle);
                 dependency_of.erase(handle);
             }
         }
