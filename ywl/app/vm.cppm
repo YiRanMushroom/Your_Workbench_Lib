@@ -14,6 +14,8 @@ import ywl.std.prelude;
 import ywl.basic.exceptions;
 import ywl.utils.logger;
 
+import ywl.misc.coroutine.framework;
+
 namespace ywl::app::vm {
 #ifdef _WIN32
     namespace detail {
@@ -44,8 +46,7 @@ namespace ywl::app::vm {
         return vm_initialized_cond;
     }
 
-    export template<int(*main)(int, char **)>
-    int run(int argc, char **argv) {
+    void init_vm() {
 #ifdef _WIN32
         AddVectoredExceptionHandler(1, detail::vectored_exception_handler);
 #else
@@ -73,9 +74,16 @@ namespace ywl::app::vm {
         });
 
         vm_initialized_cond = true;
+    }
+
+    export template<int(*main)(int, char **)>
+    int run(int argc, char **argv) {
+        init_vm();
+
+        int result = 0;
 
         try {
-            return main(argc, argv);
+            result = main(argc, argv);
         } catch (std::exception &e) {
             ywl::utils::err_printf_ln(
                     "VM caught an uncaptured exception which is not handled by the provided main function:\n{}\nExiting...",
@@ -84,6 +92,27 @@ namespace ywl::app::vm {
             ywl::utils::err_print_ln("Unknown exception was caught in VM. Exiting...");
         }
 
-        return 0;
+        return result;
+    }
+
+    export template<std::derived_from<ywl::misc::coroutine::co_executor_base> Executor_Type>
+    constexpr int async_run(ywl::misc::coroutine::co_awaitable<int>&& async_main, auto&&... args) {
+        init_vm();
+
+        Executor_Type executor{std::forward<decltype(args)>(args)...};
+
+        int result = 0;
+
+        try {
+            result = executor.block_on(std::move(async_main));
+        } catch (std::exception &e) {
+            ywl::utils::err_printf_ln(
+                    "VM caught an uncaptured exception which is not handled by the provided main function:\n{}\nExiting...",
+                    e.what());
+        } catch (...) {
+            ywl::utils::err_print_ln("Unknown exception was caught in VM. Exiting...");
+        }
+
+        return result;
     }
 }
