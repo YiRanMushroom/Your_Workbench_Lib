@@ -158,7 +158,6 @@ namespace ywl::misc::coroutine {
                     depend_on.erase(issuer);
 
                     // ywl::utils::printf_ln("Coroutine {} is resumed.", issuer.address()).flush();
-
                 }
             } else {
                 depend_on.at(issuer).erase(handle);
@@ -548,6 +547,8 @@ namespace ywl::misc::coroutine {
             }
         }
     };
+
+    export struct unit {};
 
     export class co_context {
     private:
