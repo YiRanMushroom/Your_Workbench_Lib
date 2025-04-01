@@ -45,6 +45,8 @@ namespace ywl::misc::coroutine {
 
         std::unordered_set<std::coroutine_handle<>> m_can_be_finished_immediately;
 
+        bool is_running{};
+
     public:
         constexpr void initial_schedule_task(std::coroutine_handle<> handle) override {
             m_queue.push(handle);
@@ -74,6 +76,10 @@ namespace ywl::misc::coroutine {
         }
 
         constexpr void run() override {
+            if (is_running) {
+                throw ywl::basic::runtime_error("An executor can only be run at one location");
+            }
+            is_running = true;
             while (!m_queue.empty()) {
                 auto handle = m_queue.front();
                 m_queue.pop();
@@ -108,6 +114,7 @@ namespace ywl::misc::coroutine {
                     std::rethrow_exception(std::current_exception());
                 }
             }
+            is_running = false;
         }
 
         constexpr void cancel_all_dependencies_of(std::coroutine_handle<> handle) {
@@ -215,6 +222,8 @@ namespace ywl::misc::coroutine {
         std::list<std::future<std::coroutine_handle<>>> m_unhandled_finished_tasks;
         std::unordered_set<std::coroutine_handle<>> m_can_be_finished_immediately;
 
+        std::atomic_bool is_running{};
+
     public:
         constexpr multithreaded_co_executor() = delete;
 
@@ -263,6 +272,10 @@ namespace ywl::misc::coroutine {
         }
 
         constexpr void run() override {
+            if (is_running) {
+                throw ywl::basic::runtime_error("An executor can only be run at one location");
+            }
+            is_running = true;
             while (!m_queue.empty() || !m_unhandled_finished_tasks.empty()) {
                 for (auto it = m_unhandled_finished_tasks.begin(); it != m_unhandled_finished_tasks.end();) {
                     if (it->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
@@ -328,6 +341,7 @@ namespace ywl::misc::coroutine {
                     std::rethrow_exception(std::current_exception());
                 }
             }
+            is_running = false;
         }
 
         constexpr void cancel_all_dependencies_of(std::coroutine_handle<> handle) {
