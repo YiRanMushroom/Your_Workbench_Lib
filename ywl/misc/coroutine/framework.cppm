@@ -27,6 +27,8 @@ namespace ywl::misc::coroutine {
 
         constexpr virtual void schedule_dependency_any(std::coroutine_handle<>, std::coroutine_handle<>) = 0;
 
+        constexpr virtual void resume_task(std::coroutine_handle<>) = 0;
+
         constexpr virtual void run() = 0;
     };
 
@@ -163,6 +165,13 @@ namespace ywl::misc::coroutine {
                 }
 
                 dependency_of.erase(handle);
+            }
+        }
+
+        constexpr void resume_task(std::coroutine_handle<> handle) override {
+            if (handle) {
+                m_queue.push(handle);
+                m_queue_elements.insert(handle);
             }
         }
 
@@ -374,6 +383,14 @@ namespace ywl::misc::coroutine {
                 }
 
                 dependency_of.erase(handle);
+            }
+        }
+
+        constexpr void resume_task(std::coroutine_handle<> handle) override {
+            std::lock_guard lock(m_mutex);
+            if (handle) {
+                m_queue.push(handle);
+                m_queue_elements.insert(handle);
             }
         }
 
@@ -613,4 +630,19 @@ namespace ywl::misc::coroutine {
     constexpr wait_any_of_t<Args...> wait_any_of(co_awaitable<Args> &&... co_awaitables) {
         return wait_any_of_t<Args...>(std::move(co_awaitables)...);
     }
+
+    struct request_resume_t {
+        constexpr static bool await_ready() {
+            return false;
+        }
+
+        constexpr static void await_suspend(std::coroutine_handle<> issuer) {
+            current_executor->resume_task(issuer);
+        }
+
+        constexpr static void await_resume() {
+        }
+    };
+
+    export constexpr inline request_resume_t request_resume{};
 }
