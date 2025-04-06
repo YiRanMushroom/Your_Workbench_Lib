@@ -8,3 +8,4 @@ export import ywl.misc.simple_buffer;
 export import ywl.misc.coroutine;
 export import ywl.misc.multithreading;
 export import ywl.misc.rust;
+export import ywl.misc.syn;

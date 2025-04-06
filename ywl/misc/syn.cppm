@@ -6,11 +6,31 @@ import ywl.basic.exceptions;
 
 namespace ywl::misc::syn {
     using const_iter_type = std::string_view::const_iterator;
+    // using should_stop_type = std::function<bool(const_iter_type)>;
+
+    struct should_stop_type {
+    public:
+        const_iter_type end_it;
+        std::function<bool(const_iter_type)> fn;
+
+        constexpr bool operator()(const_iter_type current_it) const {
+            if (current_it >= end_it) {
+                return true;
+            }
+            if (fn) {
+                return fn(current_it);
+            }
+            return false;
+        }
+
+        should_stop_type(const_iter_type end_it, std::function<bool(const_iter_type)> fn)
+            : end_it(end_it), fn(fn) {}
+    };
 
     export template<typename T>
-    concept is_token_type = requires(T, const_iter_type begin, const_iter_type end) {
+    concept is_token_type = requires(T, const_iter_type begin, const should_stop_type &fn) {
         typename T::result_type;
-        { T::parse(begin, end) } -> std::same_as<std::pair<const_iter_type, std::optional<typename T::result_type>>>;
+        { T::parse(begin, fn) } -> std::same_as<std::pair<const_iter_type, std::optional<typename T::result_type>>>;
     };
 
     template<typename T>
@@ -19,9 +39,9 @@ namespace ywl::misc::syn {
     // is will return true if the token is found, and false otherwise, is will not consume the token
     // parse will return the token and consume it, if the token is not found, it will return the end iterator
 
-    const_iter_type consume_white_space(const_iter_type &begin, const_iter_type end) {
+    const_iter_type consume_white_space(const_iter_type &begin, const should_stop_type &fn) {
         // will consume white space, tab, new line, carriage return
-        while (begin != end && (*begin == ' ' || *begin == '\t' || *begin == '\n' || *begin == '\r')) {
+        while (!fn(begin) && (*begin == ' ' || *begin == '\t' || *begin == '\n' || *begin == '\r')) {
             ++begin;
         }
 
@@ -38,15 +58,18 @@ namespace ywl::misc::syn {
 
     export class token_view_stream {
         const_iter_type current_iterator;
-        const_iter_type end;
+        should_stop_type should_stop;
 
     public:
-        explicit token_view_stream(std::string_view buffer) : current_iterator(buffer.cbegin()), end(buffer.cend()) {
-            current_iterator = consume_white_space(current_iterator, end);
+        explicit token_view_stream(std::string_view buffer) : current_iterator(buffer.cbegin()), should_stop{
+                                                                  buffer.cend(),
+                                                                  nullptr
+                                                              } {
+            current_iterator = consume_white_space(current_iterator, should_stop);
         }
 
         constexpr bool is_finished() const {
-            return current_iterator == end;
+            return should_stop(current_iterator);
         }
 
         template<char c>
@@ -56,7 +79,7 @@ namespace ywl::misc::syn {
             }
             if (*current_iterator == c) {
                 ++current_iterator;
-                current_iterator = consume_white_space(current_iterator, end);
+                current_iterator = consume_white_space(current_iterator, should_stop);
                 return true;
             }
             return false;
@@ -71,12 +94,12 @@ namespace ywl::misc::syn {
             auto str_length = str.length();
             auto str_end = str_data + str_length;
             auto current_end = current_iterator + str_length;
-            if (current_end > end) {
+            if (should_stop(current_end)) {
                 return false;
             }
             if (std::equal(str_data, str_end, current_iterator)) {
                 current_iterator = current_end;
-                current_iterator = consume_white_space(current_iterator, end);
+                current_iterator = consume_white_space(current_iterator, should_stop);
                 return true;
             }
             return false;
@@ -87,8 +110,8 @@ namespace ywl::misc::syn {
             if (is_finished()) {
                 return {};
             }
-            auto [result_begin, result] = T::parse(current_iterator, end);
-            current_iterator = consume_white_space(result_begin, end);
+            auto [result_begin, result] = T::parse(current_iterator, should_stop);
+            current_iterator = consume_white_space(result_begin, should_stop);
             return result;
         }
     };
@@ -98,16 +121,16 @@ namespace ywl::misc::syn {
         public:
             using result_type = std::string;
 
-            constexpr static parse_result_type<std::string> parse(const_iter_type begin, const_iter_type end) {
+            constexpr static parse_result_type<std::string> parse(const_iter_type begin, const should_stop_type &fn) {
                 auto curr = begin;
 
-                if (curr == end || !std::isalpha(*curr) && *curr != '_') {
+                if (fn(curr) || !std::isalpha(*curr) && *curr != '_') {
                     return {begin, std::nullopt};
                 }
                 auto original_begin = curr;
                 ++curr;
 
-                while (curr != end && (std::isalnum(*curr) || *curr == '_')) {
+                while (fn(curr) && (std::isalnum(*curr) || *curr == '_')) {
                     ++curr;
                 }
 
@@ -120,8 +143,8 @@ namespace ywl::misc::syn {
         public:
             using result_type = std::expected<T, error_type>;
 
-            constexpr static parse_result_type<result_type> parse(const_iter_type begin, const_iter_type end) {
-                if (begin == end) {
+            constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
+                if (fn(begin)) {
                     return {begin, std::nullopt};
                 }
 
@@ -138,7 +161,7 @@ namespace ywl::misc::syn {
 
                 T result = 0;
 
-                while (begin != end && std::isdigit(*begin)) {
+                while (!fn(begin) && std::isdigit(*begin)) {
                     // check if the result would overflow
                     if constexpr (std::is_signed_v<T>) {
                         if (result > (std::numeric_limits<T>::max() - (*begin - '0')) / 10) {
@@ -167,8 +190,8 @@ namespace ywl::misc::syn {
         public:
             using result_type = std::expected<T, error_type>;
 
-            constexpr static parse_result_type<result_type> parse(const_iter_type begin, const_iter_type end) {
-                if (begin == end) {
+            constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
+                if (fn(begin)) {
                     return {begin, std::nullopt};
                 }
 
@@ -187,7 +210,7 @@ namespace ywl::misc::syn {
 
                 auto original_begin = begin;
 
-                while (begin != end) {
+                while (!fn(begin)) {
                     if (*begin == '-') {
                         if (reading == now_reading::integer) {
                             ++begin;
@@ -213,12 +236,12 @@ namespace ywl::misc::syn {
                             reading = now_reading::exponent;
                             ++begin;
 
-                            begin = consume_white_space(begin, end);
-                            if (begin == end) {
+                            begin = consume_white_space(begin, fn);
+                            if (fn(begin)) {
                                 return {begin, std::unexpected{error_type::floating_point_format_error}};
                             }
                             auto [res_it, res]
-                                    = integer<int>::parse(begin, end);
+                                    = integer<int>::parse(begin, fn); // using int for exponent, as it is usually small
                             if (res.has_value()) {
                                 exponent = res->value();
                                 begin = res_it;
@@ -263,8 +286,8 @@ namespace ywl::misc::syn {
             using result_type = std::expected<std::string, error_type>;
 
             static std::pair<const_iter_type, std::optional<char>> handle_escape_sequence(
-                const_iter_type begin, const_iter_type end) {
-                if (begin == end) {
+                const_iter_type begin, const should_stop_type &fn) {
+                if (fn(begin)) {
                     return {begin, std::nullopt};
                 }
 
@@ -287,8 +310,8 @@ namespace ywl::misc::syn {
                 }
             }
 
-            constexpr static parse_result_type<result_type> parse(const_iter_type begin, const_iter_type end) {
-                if (begin == end) {
+            constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
+                if (fn(begin)) {
                     return {begin, std::nullopt};
                 }
 
@@ -300,13 +323,13 @@ namespace ywl::misc::syn {
                 std::stringstream ss;
 
                 auto original_begin = begin;
-                while (begin != end && *begin != '"') {
+                while (!fn(begin) && *begin != '"') {
                     if (*begin == '\\') {
                         ++begin;
-                        if (begin == end) {
+                        if (fn(begin)) {
                             return {original_begin, std::unexpected{error_type::string_format_error}};
                         }
-                        auto pair = handle_escape_sequence(begin, end);
+                        auto pair = handle_escape_sequence(begin, fn);
                         if (pair.second.has_value()) {
                             ss << *pair.second;
                             begin = pair.first;
@@ -319,7 +342,7 @@ namespace ywl::misc::syn {
                     }
                 }
 
-                if (begin == end) {
+                if (fn(begin)) {
                     return {original_begin, std::unexpected{error_type::string_format_error}};
                 }
                 if (*begin != '"') {
@@ -334,14 +357,14 @@ namespace ywl::misc::syn {
         public:
             using result_type = std::expected<bool, error_type>;
 
-            constexpr static parse_result_type<result_type> parse(const_iter_type begin, const_iter_type end) {
-                if (begin == end) {
+            constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
+                if (fn(begin)) {
                     return {begin, std::nullopt};
                 }
 
                 auto original_begin = begin;
 
-                while (begin != end && std::isalnum(*begin)) {
+                while (fn(begin) && std::isalnum(*begin)) {
                     ++begin;
                 }
 
