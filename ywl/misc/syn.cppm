@@ -53,7 +53,9 @@ namespace ywl::misc::syn {
         floating_point_overflow,
         floating_point_format_error,
         string_format_error,
-        string_invalid_escape_error
+        string_invalid_escape_error,
+        subview_not_destructed,
+        parenthesis_mismatch
     };
 
     export class token_view_stream {
@@ -149,7 +151,9 @@ namespace ywl::misc::syn {
                 throw basic::runtime_error(
                     "Token view stream not finished, this can be avoided by explicitly calling discard");
 
-            on_destruct(*this);
+            if (on_destruct) {
+                on_destruct(*this);
+            }
         }
 
         void discard() {
@@ -159,6 +163,10 @@ namespace ywl::misc::syn {
             };
 
             error = std::nullopt;
+        }
+
+        std::optional<error_type> get_error() const {
+            return error;
         }
 
         template<char front_paren, char back_paren>
@@ -171,22 +179,28 @@ namespace ywl::misc::syn {
             }
             ++current_iterator;
 
+            this->error = error_type::subview_not_destructed;
+
             return {
                 token_view_stream{
                     current_iterator,
-                    {
+                    should_stop_type{
+                        should_stop.end_it,
                         [](const_iter_type it) {
                             return *it == back_paren;
-                        },
-                        should_stop.end_it
+                        }
                     },
                     [this](token_view_stream &sub_view) {
                         if (sub_view.error.has_value()) {
                             this->error = sub_view.error;
                             return;
                         }
+                        if (this->error.has_value() && *this->error == error_type::subview_not_destructed) {
+                            this->error = std::nullopt;
+                        }
 
-                        if (sub_view.is_finished()) {
+                        if (!sub_view.is_finished()) {
+                            this->error = error_type::parenthesis_mismatch;
                             return;
                         }
 
