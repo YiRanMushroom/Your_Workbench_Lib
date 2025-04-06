@@ -3,10 +3,10 @@ export module ywl.misc.syn;
 import ywl.std.prelude;
 import ywl.basic.string_literal;
 import ywl.basic.exceptions;
+import ywl.basic.result;
 
 namespace ywl::misc::syn {
     using const_iter_type = std::string_view::const_iterator;
-    // using should_stop_type = std::function<bool(const_iter_type)>;
 
     struct should_stop_type {
     public:
@@ -30,11 +30,11 @@ namespace ywl::misc::syn {
     export template<typename T>
     concept is_token_type = requires(T, const_iter_type begin, const should_stop_type &fn) {
         typename T::result_type;
-        { T::parse(begin, fn) } -> std::same_as<std::pair<const_iter_type, std::optional<typename T::result_type>>>;
+        { T::parse(begin, fn) } -> std::same_as<std::pair<const_iter_type, typename T::result_type>>;
     };
 
     template<typename T>
-    using parse_result_type = std::pair<const_iter_type, std::optional<T>>;
+    using parse_result_type = std::pair<const_iter_type, T>;
 
     // is will return true if the token is found, and false otherwise, is will not consume the token
     // parse will return the token and consume it, if the token is not found, it will return the end iterator
@@ -97,6 +97,8 @@ namespace ywl::misc::syn {
             on_destruct = std::move(other.on_destruct);
             error = std::move(other.error);
             other.discard();
+
+            return *this;
         }
 
         constexpr bool is_finished() const {
@@ -165,7 +167,7 @@ namespace ywl::misc::syn {
             error = std::nullopt;
         }
 
-        std::optional<error_type> get_error() const {
+        [[nodiscard]] std::optional<error_type> get_error() const {
             return error;
         }
 
@@ -223,13 +225,13 @@ namespace ywl::misc::syn {
     inline namespace token_type {
         export class identifier {
         public:
-            using result_type = std::string;
+            using result_type = ywl::basic::result<std::string, error_type>;
 
-            constexpr static parse_result_type<std::string> parse(const_iter_type begin, const should_stop_type &fn) {
+            constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
                 auto curr = begin;
 
                 if (fn(curr) || !std::isalpha(*curr) && *curr != '_') {
-                    return {begin, std::nullopt};
+                    return {begin, {}};
                 }
                 auto original_begin = curr;
                 ++curr;
@@ -238,18 +240,19 @@ namespace ywl::misc::syn {
                     ++curr;
                 }
 
-                return {curr, std::string{original_begin, curr}};
+                return {curr, ywl::basic::make_result<std::string>(original_begin, curr)};
             }
         };
 
         export template<std::integral T>
         class integer {
         public:
-            using result_type = std::expected<T, error_type>;
+            // using result_type = std::expected<T, error_type>;
+            using result_type = ywl::basic::result<T, error_type>;
 
             constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
                 if (fn(begin)) {
-                    return {begin, std::nullopt};
+                    return {begin, {}};
                 }
 
                 bool is_negative = false;
@@ -271,11 +274,13 @@ namespace ywl::misc::syn {
                     // check if the result would overflow
                     if constexpr (std::is_signed_v<T>) {
                         if (result > (std::numeric_limits<T>::max() - (*begin - '0')) / 10) {
-                            return {begin, std::unexpected{error_type::integer_overflow}};
+                            // return {begin, std::unexpected{error_type::integer_overflow}};
+                            return {begin, ywl::basic::make_error<error_type>(error_type::integer_overflow)};
                         }
                     } else {
                         if (result > (std::numeric_limits<T>::max() - (*begin - '0')) / 10) {
-                            return {begin, std::unexpected{error_type::integer_overflow}};
+                            // return {begin, std::unexpected{error_type::integer_overflow}};
+                            return {begin, ywl::basic::make_error<error_type>(error_type::integer_overflow)};
                         }
                     }
 
@@ -284,25 +289,26 @@ namespace ywl::misc::syn {
                 }
 
                 if (begin == original_begin) {
-                    return {begin, std::nullopt};
+                    return {begin, {}};
                 }
 
                 if (is_negative) {
                     result = -result;
                 }
 
-                return {begin, result};
+                return {begin, ywl::basic::make_result<T>(result)};
             }
         };
 
         export template<std::floating_point T>
         class floating_point {
         public:
-            using result_type = std::expected<T, error_type>;
+            // using result_type = std::expected<T, error_type>;
+            using result_type = ywl::basic::result<T, error_type>;
 
             constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
                 if (fn(begin)) {
-                    return {begin, std::nullopt};
+                    return {begin, {}};
                 }
 
                 // float points definitely have a sign
@@ -326,20 +332,20 @@ namespace ywl::misc::syn {
                             ++begin;
                             is_negative = true;
                         } else {
-                            return {begin, std::unexpected{error_type::floating_point_format_error}};
+                            return {begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)};
                         }
                     } else if (*begin == '+') {
                         if (reading == now_reading::integer) {
                             ++begin;
                         } else {
-                            return {begin, std::unexpected{error_type::floating_point_format_error}};
+                            return {begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)};
                         }
                     } else if (*begin == '.') {
                         if (reading == now_reading::integer) {
                             reading = now_reading::fraction;
                             ++begin;
                         } else {
-                            return {begin, std::unexpected{error_type::floating_point_format_error}};
+                            return {begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)};
                         }
                     } else if (*begin == 'e' || *begin == 'E') {
                         if (reading == now_reading::integer || reading == now_reading::fraction) {
@@ -348,18 +354,18 @@ namespace ywl::misc::syn {
 
                             begin = consume_white_space(begin, fn);
                             if (fn(begin)) {
-                                return {begin, std::unexpected{error_type::floating_point_format_error}};
+                                return {begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)};
                             }
                             auto [res_it, res]
                                     = integer<int>::parse(begin, fn); // using int for exponent, as it is usually small
-                            if (res.has_value()) {
-                                exponent = res->value();
+                            if (res.is_some()) {
+                                exponent = res.get_result();
                                 begin = res_it;
                             } else {
-                                return {begin, std::unexpected{error_type::floating_point_format_error}};
+                                return {begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)};
                             }
                         } else {
-                            return {begin, std::unexpected{error_type::floating_point_format_error}};
+                            return {begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)};
                         }
                     } else if (std::isdigit(*begin)) {
                         if (reading == now_reading::integer) {
@@ -378,7 +384,7 @@ namespace ywl::misc::syn {
                 }
 
                 if (begin == original_begin) {
-                    return {begin, std::nullopt};
+                    return {begin, {}};
                 }
 
                 result += fraction_part / fraction_divisor;
@@ -386,14 +392,15 @@ namespace ywl::misc::syn {
                     result = -result;
                 }
                 result *= std::pow(10, exponent);
-                return {begin, result};
+                return {begin, ywl::basic::make_result<T>(result)};
             }
         };
 
         // string literal
         export class string {
         public:
-            using result_type = std::expected<std::string, error_type>;
+            // using result_type = std::expected<std::string, error_type>;
+            using result_type = ywl::basic::result<std::string, error_type>;
 
             static std::pair<const_iter_type, std::optional<char>> handle_escape_sequence(
                 const_iter_type begin, const should_stop_type &fn) {
@@ -422,11 +429,11 @@ namespace ywl::misc::syn {
 
             constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
                 if (fn(begin)) {
-                    return {begin, std::nullopt};
+                    return {begin, {}};
                 }
 
                 if (*begin != '"') {
-                    return {begin, std::nullopt};
+                    return {begin, {}};
                 }
                 ++begin;
 
@@ -437,14 +444,14 @@ namespace ywl::misc::syn {
                     if (*begin == '\\') {
                         ++begin;
                         if (fn(begin)) {
-                            return {original_begin, std::unexpected{error_type::string_format_error}};
+                            return {original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)};
                         }
                         auto pair = handle_escape_sequence(begin, fn);
                         if (pair.second.has_value()) {
                             ss << *pair.second;
                             begin = pair.first;
                         } else {
-                            return {original_begin, std::unexpected{error_type::string_invalid_escape_error}};
+                            return {original_begin, ywl::basic::make_error<error_type>(error_type::string_invalid_escape_error)};
                         }
                     } else {
                         ss << *begin;
@@ -453,23 +460,24 @@ namespace ywl::misc::syn {
                 }
 
                 if (fn(begin)) {
-                    return {original_begin, std::unexpected{error_type::string_format_error}};
+                    return {original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)};
                 }
                 if (*begin != '"') {
-                    return {original_begin, std::unexpected{error_type::string_format_error}};
+                    return {original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)};
                 }
                 ++begin;
-                return {begin, ss.str()};
+                return {begin, ywl::basic::make_result<std::string>(ss.str())};
             }
         };
 
         export class boolean {
         public:
-            using result_type = std::expected<bool, error_type>;
+            // using result_type = std::expected<bool, error_type>;
+            using result_type = ywl::basic::result<bool, error_type>;
 
             constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
                 if (fn(begin)) {
-                    return {begin, std::nullopt};
+                    return {begin, {}};
                 }
 
                 auto original_begin = begin;
@@ -480,18 +488,18 @@ namespace ywl::misc::syn {
 
                 size_t length = begin - original_begin;
                 if (length != 4 && length != 5) {
-                    return {original_begin, std::unexpected{error_type::string_format_error}};
+                    return {original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)};
                 }
 
                 constexpr auto true_str = "true";
                 constexpr auto false_str = "false";
                 if (length == 4 && std::equal(original_begin, begin, true_str, true_str + 4)) {
-                    return {begin, true};
+                    return {begin, ywl::basic::make_result<bool>(true)};
                 }
                 if (length == 5 && std::equal(original_begin, begin, false_str, false_str + 5)) {
-                    return {begin, false};
+                    return {begin, ywl::basic::make_result<bool>(false)};
                 }
-                return {original_begin, std::unexpected{error_type::string_format_error}};
+                return {original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)};
             }
         };
     }

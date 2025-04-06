@@ -94,7 +94,7 @@ namespace ywl::basic {
         std::optional<std::variant<result_type, error_type>> m_data{};
 
     public:
-        constexpr result() = delete;
+        constexpr result() = default;
 
         constexpr result(const result &) = default;
 
