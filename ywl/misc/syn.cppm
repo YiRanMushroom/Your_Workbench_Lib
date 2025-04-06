@@ -59,19 +59,43 @@ namespace ywl::misc::syn {
     export class token_view_stream {
         const_iter_type current_iterator;
         should_stop_type should_stop;
+        std::function<void(token_view_stream &)> on_destruct;
+        std::optional<error_type> error;
 
     public:
         explicit token_view_stream(std::string_view buffer) : current_iterator(buffer.cbegin()), should_stop{
                                                                   buffer.cend(),
                                                                   nullptr
-                                                              } {
+                                                              }, on_destruct{}, error{} {
+            current_iterator = consume_white_space(current_iterator, should_stop);
+        }
+
+        token_view_stream(const_iter_type begin, should_stop_type should_stop,
+                          std::function<void(token_view_stream &)> on_destruct = {})
+            : current_iterator(begin), should_stop(should_stop), on_destruct(on_destruct), error{} {
             current_iterator = consume_white_space(current_iterator, should_stop);
         }
 
         token_view_stream(const token_view_stream &) = delete;
+
         token_view_stream &operator=(const token_view_stream &) = delete;
-        token_view_stream(token_view_stream &&) = delete;
-        token_view_stream &operator=(token_view_stream &&) = delete;
+
+        token_view_stream(token_view_stream &&other) noexcept
+            : current_iterator(std::move(other.current_iterator)),
+              should_stop(std::move(other.should_stop)), on_destruct(std::move(other.on_destruct)),
+              error(std::move(other.error)) {
+            other.discard();
+        }
+
+        token_view_stream &operator=(token_view_stream &&other) noexcept {
+            auto cpy = std::move(*this);
+
+            current_iterator = std::move(other.current_iterator);
+            should_stop = std::move(other.should_stop);
+            on_destruct = std::move(other.on_destruct);
+            error = std::move(other.error);
+            other.discard();
+        }
 
         constexpr bool is_finished() const {
             return should_stop(current_iterator);
@@ -124,12 +148,60 @@ namespace ywl::misc::syn {
             if (!is_finished())
                 throw basic::runtime_error(
                     "Token view stream not finished, this can be avoided by explicitly calling discard");
+
+            on_destruct(*this);
         }
 
         void discard() {
             should_stop = {
                 current_iterator,
                 [](const_iter_type) { return true; }
+            };
+
+            error = std::nullopt;
+        }
+
+        template<char front_paren, char back_paren>
+        std::optional<token_view_stream> sub_stream() {
+            if (is_finished()) {
+                return {};
+            }
+            if (*current_iterator != front_paren) {
+                return {};
+            }
+            ++current_iterator;
+
+            return {
+                token_view_stream{
+                    current_iterator,
+                    {
+                        [](const_iter_type it) {
+                            return *it == back_paren;
+                        },
+                        should_stop.end_it
+                    },
+                    [this](token_view_stream &sub_view) {
+                        if (sub_view.error.has_value()) {
+                            this->error = sub_view.error;
+                            return;
+                        }
+
+                        if (sub_view.is_finished()) {
+                            return;
+                        }
+
+                        if (*sub_view.current_iterator != back_paren) {
+                            throw basic::runtime_error(
+                                "Sub stream not finished, this can be avoided by explicitly calling discard");
+                        }
+
+                        ++sub_view.current_iterator;
+                        sub_view.current_iterator =
+                                consume_white_space(sub_view.current_iterator, sub_view.should_stop);
+
+                        this->current_iterator = sub_view.current_iterator;
+                    }
+                }
             };
         }
     };
