@@ -5,7 +5,7 @@ import ywl.basic.string_literal;
 import ywl.basic.exceptions;
 
 namespace ywl::misc::syn {
-    using const_iter_type = std::string::const_iterator;
+    using const_iter_type = std::string_view::const_iterator;
 
     export template<typename T>
     concept is_token_type = requires(T, const_iter_type begin, const_iter_type end) {
@@ -36,18 +36,17 @@ namespace ywl::misc::syn {
         string_invalid_escape_error
     };
 
-    class token_stream {
-        std::string m_buffer;
+    export class token_view_stream {
         const_iter_type current_iterator;
+        const_iter_type end;
 
     public:
-        explicit token_stream(std::string buffer) : m_buffer{std::move(buffer)},
-                                                    current_iterator{m_buffer.cbegin()} {
-            current_iterator = consume_white_space(current_iterator, m_buffer.cend());
+        explicit token_view_stream(std::string_view buffer) : current_iterator(buffer.cbegin()), end(buffer.cend()) {
+            current_iterator = consume_white_space(current_iterator, end);
         }
 
         constexpr bool is_finished() const {
-            return current_iterator == m_buffer.cend();
+            return current_iterator == end;
         }
 
         template<char c>
@@ -57,7 +56,7 @@ namespace ywl::misc::syn {
             }
             if (*current_iterator == c) {
                 ++current_iterator;
-                current_iterator = consume_white_space(current_iterator, m_buffer.cend());
+                current_iterator = consume_white_space(current_iterator, end);
                 return true;
             }
             return false;
@@ -72,24 +71,24 @@ namespace ywl::misc::syn {
             auto str_length = str.length();
             auto str_end = str_data + str_length;
             auto current_end = current_iterator + str_length;
-            if (current_end > m_buffer.cend()) {
+            if (current_end > end) {
                 return false;
             }
             if (std::equal(str_data, str_end, current_iterator)) {
                 current_iterator = current_end;
-                current_iterator = consume_white_space(current_iterator, m_buffer.cend());
+                current_iterator = consume_white_space(current_iterator, end);
                 return true;
             }
             return false;
         }
 
         template<is_token_type T>
-        parse_result_type<typename T::result_type> parse_by() {
+        auto parse_by() -> std::optional<typename T::result_type> {
             if (is_finished()) {
-                return {current_iterator, std::nullopt};
+                return {};
             }
-            auto [result_begin, result] = T::parse(current_iterator, m_buffer.cend());
-            current_iterator = consume_white_space(result_begin, m_buffer.cend());
+            auto [result_begin, result] = T::parse(current_iterator, end);
+            current_iterator = consume_white_space(result_begin, end);
             return result;
         }
     };
@@ -175,7 +174,6 @@ namespace ywl::misc::syn {
 
                 // float points definitely have a sign
                 bool is_negative = false;
-                bool has_fraction = false;
                 int exponent = 0;
                 enum class now_reading {
                     integer,
@@ -186,6 +184,8 @@ namespace ywl::misc::syn {
                 T result = 0;
                 T fraction_part = 0;
                 T fraction_divisor = 1;
+
+                auto original_begin = begin;
 
                 while (begin != end) {
                     if (*begin == '-') {
@@ -242,6 +242,10 @@ namespace ywl::misc::syn {
                     } else {
                         break;
                     }
+                }
+
+                if (begin == original_begin) {
+                    return {begin, std::nullopt};
                 }
 
                 result += fraction_part / fraction_divisor;
