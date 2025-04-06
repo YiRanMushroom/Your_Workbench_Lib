@@ -114,6 +114,19 @@ namespace ywl::misc::syn {
             current_iterator = consume_white_space(result_begin, should_stop);
             return result;
         }
+
+        ~token_view_stream() noexcept(false) {
+            if (!is_finished())
+                throw basic::runtime_error(
+                    "Token view stream not finished, this can be avoided by explicitly calling discard");
+        }
+
+        void discard() {
+            should_stop = {
+                current_iterator,
+                [](const_iter_type) { return true; }
+            };
+        }
     };
 
     inline namespace token_type {
