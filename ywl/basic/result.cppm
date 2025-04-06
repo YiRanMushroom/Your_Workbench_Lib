@@ -132,12 +132,12 @@ namespace ywl::basic {
 
         [[nodiscard]] constexpr result_state get_state() const {
             if (!m_data.has_value()) {
-                return result_state::none;
+                return none;
             }
             if (std::holds_alternative<result_type>(m_data)) {
-                return result_state::some;
+                return some;
             }
-            return result_state::error;
+            return error;
         }
 
         constexpr result_type &get_result() & {
@@ -156,14 +156,16 @@ namespace ywl::basic {
 
         constexpr result_type &&get_result() && {
             if (is_some()) {
-                return std::move(std::get<result_type>(*m_data));
+                auto data = std::exchange(m_data, std::nullopt);
+                return std::move(std::get<result_type>(*data));
             }
             throw runtime_error("Result is not some");
         }
 
         constexpr const result_type &&get_result() const && {
             if (is_some()) {
-                return std::move(std::get<result_type>(*m_data));
+                auto data = std::exchange(m_data, std::nullopt);
+                return std::move(std::get<result_type>(*data));
             }
             throw runtime_error("Result is not some");
         }
@@ -184,6 +186,7 @@ namespace ywl::basic {
 
         constexpr error_type &&get_error() && {
             if (is_error()) {
+                auto data = std::exchange(m_data, std::nullopt);
                 return std::move(std::get<error_type>(*m_data));
             }
             throw runtime_error("Result is not error");
@@ -191,6 +194,7 @@ namespace ywl::basic {
 
         constexpr const error_type &&get_error() const && {
             if (is_error()) {
+                auto data = std::exchange(m_data, std::nullopt);
                 return std::move(std::get<error_type>(*m_data));
             }
             throw runtime_error("Result is not error");
