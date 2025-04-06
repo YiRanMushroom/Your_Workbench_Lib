@@ -125,7 +125,7 @@ namespace ywl::misc::syn {
             auto str_length = str.length();
             auto str_end = str_data + str_length;
             auto current_end = current_iterator + str_length;
-            if (should_stop(current_end)) {
+            if (current_end > should_stop.end_it) {
                 return false;
             }
             if (std::equal(str_data, str_end, current_iterator)) {
@@ -254,6 +254,8 @@ namespace ywl::misc::syn {
 
                 bool is_negative = false;
 
+                auto original_begin = begin;
+
                 if constexpr (std::is_signed_v<T>) {
                     if (*begin == '-') {
                         ++begin;
@@ -279,6 +281,10 @@ namespace ywl::misc::syn {
 
                     result = result * 10 + (*begin - '0');
                     ++begin;
+                }
+
+                if (begin == original_begin) {
+                    return {begin, std::nullopt};
                 }
 
                 if (is_negative) {
