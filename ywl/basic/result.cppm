@@ -70,7 +70,7 @@ namespace ywl::basic {
     };
 
     export template<typename T>
-    constexpr auto error_of(auto &&... args) {
+    constexpr auto make_error(auto &&... args) {
         return error_of_t{T{std::forward<decltype(args)>(args)...}};
     }
 
@@ -104,17 +104,17 @@ namespace ywl::basic {
 
         constexpr result &operator=(result &&) = default;
 
-        constexpr result(result_of_t<result_type> &&value) : m_data(value.take()) {} // NOLINT
+        constexpr result(result_of_t<result_type> &&value) : m_data(std::move(value).take()) {} // NOLINT
 
-        constexpr result(error_of_t<error_type> &&error) : m_data(error.take()) {} // NOLINT
+        constexpr result(error_of_t<error_type> &&error) : m_data(std::move(error).take()) {} // NOLINT
 
         constexpr result &operator=(result_of_t<result_type> &&value) {
-            m_data = value.take();
+            m_data = std::move(value).take();
             return *this;
         }
 
         constexpr result &operator=(error_of_t<error_type> &&error) {
-            m_data = error.take();
+            m_data = std::move(error).take();
             return *this;
         }
 
@@ -123,11 +123,11 @@ namespace ywl::basic {
         }
 
         [[nodiscard]] constexpr bool is_some() const {
-            return m_data.has_value() && std::holds_alternative<result_type>(m_data);
+            return m_data.has_value() && std::holds_alternative<result_type>(*m_data);
         }
 
         [[nodiscard]] constexpr bool is_error() const {
-            return m_data.has_value() && std::holds_alternative<error_type>(m_data);
+            return m_data.has_value() && std::holds_alternative<error_type>(*m_data);
         }
 
         [[nodiscard]] constexpr result_state get_state() const {
@@ -142,56 +142,56 @@ namespace ywl::basic {
 
         constexpr result_type &get_result() & {
             if (is_some()) {
-                return std::get<result_type>(m_data);
+                return std::get<result_type>(*m_data);
             }
             throw runtime_error("Result is not some");
         }
 
         constexpr const result_type &get_result() const & {
             if (is_some()) {
-                return std::get<result_type>(m_data);
+                return std::get<result_type>(*m_data);
             }
             throw runtime_error("Result is not some");
         }
 
         constexpr result_type &&get_result() && {
             if (is_some()) {
-                return std::move(std::get<result_type>(m_data));
+                return std::move(std::get<result_type>(*m_data));
             }
             throw runtime_error("Result is not some");
         }
 
         constexpr const result_type &&get_result() const && {
             if (is_some()) {
-                return std::move(std::get<result_type>(m_data));
+                return std::move(std::get<result_type>(*m_data));
             }
             throw runtime_error("Result is not some");
         }
 
         constexpr error_type &get_error() & {
             if (is_error()) {
-                return std::get<error_type>(m_data);
+                return std::get<error_type>(*m_data);
             }
             throw runtime_error("Result is not error");
         }
 
         constexpr const error_type &get_error() const & {
             if (is_error()) {
-                return std::get<error_type>(m_data);
+                return std::get<error_type>(*m_data);
             }
             throw runtime_error("Result is not error");
         }
 
         constexpr error_type &&get_error() && {
             if (is_error()) {
-                return std::move(std::get<error_type>(m_data));
+                return std::move(std::get<error_type>(*m_data));
             }
             throw runtime_error("Result is not error");
         }
 
         constexpr const error_type &&get_error() const && {
             if (is_error()) {
-                return std::move(std::get<error_type>(m_data));
+                return std::move(std::get<error_type>(*m_data));
             }
             throw runtime_error("Result is not error");
         }
