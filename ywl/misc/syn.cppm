@@ -68,6 +68,11 @@ namespace ywl::misc::syn {
             current_iterator = consume_white_space(current_iterator, should_stop);
         }
 
+        token_view_stream(const token_view_stream &) = delete;
+        token_view_stream &operator=(const token_view_stream &) = delete;
+        token_view_stream(token_view_stream &&) = delete;
+        token_view_stream &operator=(token_view_stream &&) = delete;
+
         constexpr bool is_finished() const {
             return should_stop(current_iterator);
         }
