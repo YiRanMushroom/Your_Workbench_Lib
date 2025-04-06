@@ -139,7 +139,7 @@ namespace ywl::misc::syn {
         }
 
         template<is_token_type T>
-        auto parse_by() -> std::optional<typename T::result_type> {
+        auto parse_by() -> typename T::result_type {
             if (is_finished()) {
                 return {};
             }
@@ -165,6 +165,10 @@ namespace ywl::misc::syn {
             };
 
             error = std::nullopt;
+        }
+
+        void reset() {
+            auto cpy = std::move(*this);
         }
 
         [[nodiscard]] std::optional<error_type> get_error() const {
