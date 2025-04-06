@@ -4,25 +4,48 @@ import ywl.std.prelude;
 import ywl.basic.exceptions;
 
 namespace ywl::utils {
-    export constexpr std::optional<std::string> get_istream_input(auto &is) {
-        if (auto *buffer = is.rdbuf()) {
-            int next = buffer->sgetc();
-            if (next != std::ios::traits_type::eof()) {
-                std::string input;
-                int ch;
-                while ((ch = buffer->sbumpc()) != std::ios::traits_type::eof()) {
-                    if (ch == '\n') {
-                        if (!input.empty() && input.back() == '\r') {
-                            input.pop_back();
-                        }
-                        return input;
-                    }
-                    input.push_back(static_cast<char>(ch));
-                }
-            }
+    template<typename T> // not well implemented, this will cause memory leak
+    class input_listener {
+        T &m_input_stream;
+        std::mutex m_mutex;
+        std::queue<std::string> m_queue;
+
+        std::jthread m_thread;
+
+    public:
+        input_listener(T &input_stream)
+            : m_input_stream{input_stream}, m_mutex{}, m_queue{},
+              m_thread([this] {
+                  std::string line;
+                  while (true) {
+                      /*if (std::cin.rdbuf()->in_avail() <= 0) {
+                          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                          continue;
+                      }*/
+                      std::getline(m_input_stream, line);
+                      if (line.empty()) {
+                          continue;
+                      }
+                      std::lock_guard lock(m_mutex);
+                      m_queue.push(line);
+                  }
+              }) {
         }
-        return {};
-    }
+
+        std::optional<std::string> get_input() {
+            std::lock_guard lock(m_mutex);
+            if (m_queue.empty()) {
+                return std::nullopt;
+            }
+            auto line = m_queue.front();
+            m_queue.pop();
+            return line;
+        }
+
+        ~input_listener() {
+            m_thread.detach();
+        }
+    };
 
     constexpr bool create_directory(const std::filesystem::path &path) {
         // if directory is "" return true
@@ -35,7 +58,7 @@ namespace ywl::utils {
         return std::filesystem::create_directories(path);
     }
 
-    export constexpr std::ifstream read_or_create_file(const std::filesystem::path& path) {
+    export constexpr std::ifstream read_or_create_file(const std::filesystem::path &path) {
         if (!ywl::utils::create_directory(path.parent_path())) {
             throw ywl::basic::runtime_error(
                 std::format("Cannot open file because the directory {} cannot be created.",
@@ -61,7 +84,7 @@ namespace ywl::utils {
         throw ywl::basic::runtime_error(std::format("Cannot create file: {}", path.string()));
     }
 
-    export constexpr std::ofstream write_or_create_file(const std::filesystem::path& path) {
+    export constexpr std::ofstream write_or_create_file(const std::filesystem::path &path) {
         if (ywl::utils::create_directory(path.parent_path())) {
             if (std::ofstream ofs{path}) {
                 return ofs;

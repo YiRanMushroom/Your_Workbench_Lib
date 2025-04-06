@@ -64,7 +64,7 @@ namespace ywl::basic {
 
         SymCleanup(process);
         return ss.str();
-#elif __has_include(<stacktrace>) && defined(__GLIBCXX__)
+#elif __has_include(<stacktrace>) && defined(__GLIBCXX__) && _GLIBCXX_HAVE_STACKTRACE
         std::stringstream ss;
         ss << std::stacktrace::current();
         return ss.str();
@@ -77,22 +77,21 @@ namespace ywl::basic {
     export class ywl_exception_base : public std::exception {
         std::string message;
         std::source_location location;
-        std::optional <std::string> stacktrace;
-        mutable std::optional <std::string> full_message;
+        std::optional<std::string> stacktrace;
+        mutable std::optional<std::string> full_message;
 
     public:
         ywl_exception_base() noexcept = delete;
 
         explicit ywl_exception_base(std::string message,
                                     std::source_location location = std::source_location::current()
-                //, std::stacktrace stacktrace = std::stacktrace::current()
+                                    //, std::stacktrace stacktrace = std::stacktrace::current()
         )
-        noexcept: message{std::move(message)}, location{std::move(location)}, stacktrace{
-                get_stacktrace()
-        }
+            noexcept: message{std::move(message)}, location{std::move(location)}, stacktrace{
+                          get_stacktrace()
+                      }
         // ,stacktrace{std::move(stacktrace)}
         {
-
         } // NOLINT
 
         [[nodiscard]] virtual const char *exception_reminder() const noexcept {
@@ -112,7 +111,7 @@ namespace ywl::basic {
             if (!full_message) {
                 full_message = std::format("{}: {}\nat: {}:{}:{}", exception_reminder(), message,
                                            location.file_name(), location.line(), location.column()
-                        // , stacktrace
+                                           // , stacktrace
                 );
 
                 if (stacktrace) {
@@ -140,11 +139,13 @@ namespace ywl::basic {
         ywl_impl_error() noexcept = delete;
 
         ywl_impl_error(std::string message, std::source_location location = std::source_location::current()
-                // , std::stacktrace stacktrace = std::stacktrace::current()
+                       // , std::stacktrace stacktrace = std::stacktrace::current()
         )
-        noexcept: ywl_exception_base{std::move(message), std::move(location)
-                // , std::move(stacktrace)
-        } {}
+            noexcept: ywl_exception_base{
+            std::move(message), std::move(location)
+            // , std::move(stacktrace)
+        } {
+        }
 
         ywl_impl_error(const ywl_impl_error &) = default;
 
@@ -165,11 +166,13 @@ namespace ywl::basic {
         runtime_error() noexcept = delete;
 
         runtime_error(std::string message, std::source_location location = std::source_location::current()
-                // , std::stacktrace stacktrace = std::stacktrace::current()
+                      // , std::stacktrace stacktrace = std::stacktrace::current()
         )
-        noexcept: ywl_exception_base{std::move(message), std::move(location)
-                // , std::move(stacktrace)
-        } {}
+            noexcept: ywl_exception_base{
+            std::move(message), std::move(location)
+            // , std::move(stacktrace)
+        } {
+        }
 
         runtime_error(const runtime_error &) = default;
 
@@ -190,11 +193,13 @@ namespace ywl::basic {
         logic_error() noexcept = delete;
 
         logic_error(std::string message, std::source_location location = std::source_location::current()
-                // , std::stacktrace stacktrace = std::stacktrace::current()
+                    // , std::stacktrace stacktrace = std::stacktrace::current()
         )
-        noexcept: ywl_exception_base{std::move(message), std::move(location)
-                // , std::move(stacktrace)
-        } {}
+            noexcept: ywl_exception_base{
+            std::move(message), std::move(location)
+            // , std::move(stacktrace)
+        } {
+        }
 
         logic_error(const logic_error &) = default;
 

@@ -14,16 +14,17 @@ import ywl.std.prelude;
 import ywl.basic.exceptions;
 import ywl.utils.logger;
 
+import ywl.misc.coroutine.framework;
+
 namespace ywl::app::vm {
 #ifdef _WIN32
     namespace detail {
-
         LONG WINAPI vectored_exception_handler(PEXCEPTION_POINTERS ep) {
             switch (ep->ExceptionRecord->ExceptionCode) {
                 case EXCEPTION_ACCESS_VIOLATION: {
-                    auto addr = reinterpret_cast<void*>(ep->ExceptionRecord->ExceptionInformation[1]);
+                    auto addr = reinterpret_cast<void *>(ep->ExceptionRecord->ExceptionInformation[1]);
                     throw ywl::basic::illegal_access_exception(
-                            std::format("Segmentation fault at address {}", addr)
+                        std::format("Segmentation fault at address {}", addr)
                     );
                 }
                 case EXCEPTION_FLT_DIVIDE_BY_ZERO:
@@ -44,8 +45,7 @@ namespace ywl::app::vm {
         return vm_initialized_cond;
     }
 
-    export template<int(*main)(int, char **)>
-    int run(int argc, char **argv) {
+    void init_vm() {
 #ifdef _WIN32
         AddVectoredExceptionHandler(1, detail::vectored_exception_handler);
 #else
@@ -73,17 +73,48 @@ namespace ywl::app::vm {
         });
 
         vm_initialized_cond = true;
+    }
+
+    export template<int(*main)(int, char **)>
+    int run(int argc, char **argv) {
+        init_vm();
+
+        int result = 0;
 
         try {
-            return main(argc, argv);
+            result = main(argc, argv);
         } catch (std::exception &e) {
             ywl::utils::err_printf_ln(
-                    "VM caught an uncaptured exception which is not handled by the provided main function:\n{}\nExiting...",
-                    e.what());
+                "VM caught an uncaptured exception which is not handled by the provided main function:\n{}\nExiting...",
+                e.what());
         } catch (...) {
             ywl::utils::err_print_ln("Unknown exception was caught in VM. Exiting...");
         }
 
-        return 0;
+        return result;
+    }
+
+    export template<
+        ywl::misc::coroutine::co_awaitable<int> (*async_main)(int, char **),
+        std::derived_from<ywl::misc::coroutine::co_executor_base> Executor_Type>
+    constexpr int async_run(int argc, char **argv, auto&&... args) {
+        init_vm();
+
+        auto co_context = ywl::misc::coroutine::co_context::from_executor<Executor_Type>(
+            std::forward<decltype(args)>(args)...);
+
+        int result = 0;
+
+        try {
+            result = co_context.block_on(async_main(argc, argv));
+        } catch (std::exception &e) {
+            ywl::utils::err_printf_ln(
+                "VM caught an uncaptured exception which is not handled by the provided main function:\n{}\nExiting...",
+                e.what());
+        } catch (...) {
+            ywl::utils::err_print_ln("Unknown exception was caught in VM. Exiting...");
+        }
+
+        return result;
     }
 }

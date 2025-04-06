@@ -743,7 +743,7 @@ export module build_std;
 #  include <sstream>
 #endif
 #include <stack>
-#if __has_include(<stacktrace>)
+#if __has_include(<stacktrace>) && _GLIBCXX_HAVE_STACKTRACE
 #include <stacktrace>
 #endif
 #include <stdexcept>
@@ -921,7 +921,9 @@ export module build_std;
 #endif
 #include "libstdcxx-gnu/std/sstream.inc"
 #include "libstdcxx-gnu/std/stack.inc"
+#if __has_include(<stacktrace>) && _GLIBCXX_HAVE_STACKTRACE
 #include "libstdcxx-gnu/std/stacktrace.inc"
+#endif
 #include "libstdcxx-gnu/std/stdexcept.inc"
 #if __has_include(<stdfloat>)
 #include "libstdcxx-gnu/std/stdfloat.inc"
