@@ -7,6 +7,10 @@ namespace ywl::basic {
     struct string_literal {
         char data[N];
 
+        constexpr size_t length() const noexcept {
+            return N - 1;
+        }
+
         constexpr string_literal(const char (&str)[N]) : data{} { // NOLINT
             std::copy_n(str, N, data);
         }
