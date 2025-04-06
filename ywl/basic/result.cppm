@@ -233,16 +233,17 @@ struct std::tuple_element<size_t{1}, result<Result_Type, Error_Type>> {
 
 namespace std {
     export template<size_t I, typename Result_Type, typename Error_Type>
-    constexpr auto &&get(result<Result_Type, Error_Type> &&self) {
+    constexpr auto get(result<Result_Type, Error_Type> &&self) {
         if constexpr (I == 0) {
             if (self.is_some()) {
-                return std::move(self).get_result();
+                return std::optional{std::move(self).get_result()};
             }
-            return decltype(std::move(self).get_result()){};
+            return std::optional<Result_Type>{};
         } else if constexpr (I == 1) {
             if (self.is_error()) {
-                return std::move(self).get_error();
+                return std::optional{std::move(self).get_error()};
             }
+            return std::optional<Error_Type>{};
         } else {
             static_assert(false, "Index out of bounds");
         }
