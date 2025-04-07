@@ -32,7 +32,7 @@ namespace ywl::basic {
         deleter_type m_deleter{};
 
     public:
-        void reset() {
+        constexpr void reset() {
             if (m_data) {
                 assert(m_copy_constructor && m_deleter);
                 m_deleter(reinterpret_cast<void *>(m_data));
@@ -42,15 +42,15 @@ namespace ywl::basic {
             }
         }
 
-        copiable_reference() = default;
+        constexpr copiable_reference() = default;
 
     private:
-        pointer_type clone_ptr() const {
+        constexpr pointer_type clone_ptr() const {
             return static_cast<pointer_type>(m_copy_constructor(reinterpret_cast<void *>(m_data)));
         }
 
     public:
-        copiable_reference(pointer_type data,
+        constexpr copiable_reference(pointer_type data,
                            copy_constructor_type copy_constructor,
                            deleter_type deleter)
             : m_data(data),
@@ -59,7 +59,7 @@ namespace ywl::basic {
             assert(m_data && m_copy_constructor && m_deleter);
         }
 
-        copiable_reference clone(this const copiable_reference &self) {
+        constexpr copiable_reference clone(this const copiable_reference &self) {
             pointer_type data = self.clone_ptr();
             return copiable_reference{
                 data,
@@ -68,54 +68,54 @@ namespace ywl::basic {
             };
         }
 
-        copiable_reference take(this copiable_reference& self) {
+        constexpr copiable_reference take(this copiable_reference& self) {
             return std::move(self);
         }
 
         template<base_of<T> Base = T>
-        Base &as_ref() {
+        constexpr Base &as_ref() {
             assert(m_data);
             return *reinterpret_cast<Base *>(m_data);
         }
 
         template<base_of<T> Base = T>
-        const Base &as_ref() const {
+        constexpr const Base &as_ref() const {
             assert(m_data);
             return *reinterpret_cast<const Base *>(m_data);
         }
 
-        T *get() {
+        constexpr pointer_type get() {
             assert(m_data);
             return m_data;
         }
 
-        T *get() const {
+        constexpr const_pointer_type get() const {
             assert(m_data);
             return m_data;
         }
 
-        T &operator*() {
+        constexpr reference_type operator*() {
             assert(m_data);
             return *m_data;
         }
 
-        const T &operator*() const {
+        constexpr const_reference_type operator*() const {
             assert(m_data);
             return *m_data;
         }
 
-        T *operator->() {
+        constexpr pointer_type operator->() {
             assert(m_data);
             return m_data;
         }
 
-        const T *operator->() const {
+        constexpr const_pointer_type operator->() const {
             assert(m_data);
             return m_data;
         }
 
     public:
-        ~copiable_reference() {
+        constexpr ~copiable_reference() {
             reset();
         }
 
@@ -124,7 +124,7 @@ namespace ywl::basic {
 
         // move constructor, which also receives any derived class
         template<derived_from<T> Derived>
-        copiable_reference(copiable_reference<Derived> &&other) : // NOLINT
+        constexpr copiable_reference(copiable_reference<Derived> &&other) : // NOLINT
             m_data{std::exchange(other.m_data, nullptr)},
             m_copy_constructor{
                 std::exchange(other.m_copy_constructor, nullptr)
@@ -134,13 +134,13 @@ namespace ywl::basic {
 
         // copy constructor, which also receives any derived class
         template<derived_from<T> Derived>
-        copiable_reference(const copiable_reference<Derived> &other) noexcept : // NOLINT
+        constexpr copiable_reference(const copiable_reference<Derived> &other) noexcept : // NOLINT
             copiable_reference(other.clone()) {
         }
 
         // move assignment operator, which also receives any derived class
         template<derived_from<T> Derived>
-        copiable_reference &operator=(copiable_reference<Derived> &&other) noexcept {
+        constexpr copiable_reference &operator=(copiable_reference<Derived> &&other) noexcept {
             if (this != &other) {
                 reset();
                 m_data = std::exchange(other.m_data, nullptr);
@@ -152,7 +152,7 @@ namespace ywl::basic {
 
         // copy assignment operator, which also receives any derived class
         template<derived_from<T> Derived>
-        copiable_reference &operator=(const copiable_reference<Derived> &other) noexcept {
+        constexpr copiable_reference &operator=(const copiable_reference<Derived> &other) noexcept {
             if (this != &other) {
                 reset();
                 m_data = other.clone_ptr();
@@ -165,7 +165,7 @@ namespace ywl::basic {
     public:
         // dynamic cast
         template<derived_from<T> Derived>
-        Derived *as_dyn() {
+        constexpr Derived *as_dyn() {
             if constexpr (std::is_same_v<Derived, T>) {
                 return m_data;
             } else {
@@ -174,7 +174,7 @@ namespace ywl::basic {
         }
 
         template<derived_from<T> Derived>
-        const Derived *as_dyn() const {
+        constexpr const Derived *as_dyn() const {
             if constexpr (std::is_same_v<Derived, T>) {
                 return m_data;
             } else {
@@ -184,20 +184,20 @@ namespace ywl::basic {
 
         // reinterpret_cast, dangerous.
         template<typename U>
-        U *reinterpret_as() {
+        constexpr U *reinterpret_as() {
             assert(m_data);
             return reinterpret_cast<U *>(m_data);
         }
 
         template<typename U>
-        const U *reinterpret_as() const {
+        constexpr const U *reinterpret_as() const {
             assert(m_data);
             return reinterpret_cast<const U *>(m_data);
         }
     };
 
     export template<typename T, typename... Args>
-    copiable_reference<T> make_reference(Args &&... args) {
+    constexpr copiable_reference<T> make_reference(Args &&... args) {
         T *data = new T{std::forward<Args>(args)...};
 
         struct copy_constructor {
