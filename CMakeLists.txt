@@ -13,7 +13,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
 
 add_library(${PROJECT_NAME} ${MODULES}
-        ywl/misc/coroutine/coroutine.ixx)
+        ywl/misc/coroutine/coroutine.ixx
+        ywl/basic/copiable_reference.cppm)
 
 target_sources(${PROJECT_NAME}
         PUBLIC
