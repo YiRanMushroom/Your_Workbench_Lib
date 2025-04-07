@@ -23,7 +23,7 @@ namespace ywl::misc::syn {
             return false;
         }
 
-        should_stop_type(const_iter_type end_it, std::function<bool(const_iter_type)> fn)
+        constexpr should_stop_type(const_iter_type end_it, std::function<bool(const_iter_type)> fn)
             : end_it(end_it), fn(fn) {}
     };
 
@@ -39,7 +39,7 @@ namespace ywl::misc::syn {
     // is will return true if the token is found, and false otherwise, is will not consume the token
     // parse will return the token and consume it, if the token is not found, it will return the end iterator
 
-    const_iter_type consume_white_space(const_iter_type &begin, const should_stop_type &fn) {
+    constexpr const_iter_type consume_white_space(const_iter_type &begin, const should_stop_type &fn) {
         // will consume white space, tab, new line, carriage return
         while (!fn(begin) && (*begin == ' ' || *begin == '\t' || *begin == '\n' || *begin == '\r')) {
             ++begin;
@@ -65,31 +65,31 @@ namespace ywl::misc::syn {
         std::optional<error_type> error;
 
     public:
-        explicit token_view_stream(std::string_view buffer) : current_iterator(buffer.cbegin()), should_stop{
-                                                                  buffer.cend(),
-                                                                  nullptr
-                                                              }, on_destruct{}, error{} {
+        constexpr explicit token_view_stream(std::string_view buffer) : current_iterator(buffer.cbegin()), should_stop{
+                                                                            buffer.cend(),
+                                                                            nullptr
+                                                                        }, on_destruct{}, error{} {
             current_iterator = consume_white_space(current_iterator, should_stop);
         }
 
-        token_view_stream(const_iter_type begin, should_stop_type should_stop,
-                          std::function<void(token_view_stream &)> on_destruct = {})
+        constexpr token_view_stream(const_iter_type begin, should_stop_type should_stop,
+                                    std::function<void(token_view_stream &)> on_destruct = {})
             : current_iterator(begin), should_stop(should_stop), on_destruct(on_destruct), error{} {
             current_iterator = consume_white_space(current_iterator, should_stop);
         }
 
-        token_view_stream(const token_view_stream &) = delete;
+        constexpr token_view_stream(const token_view_stream &) = delete;
 
-        token_view_stream &operator=(const token_view_stream &) = delete;
+        constexpr token_view_stream &operator=(const token_view_stream &) = delete;
 
-        token_view_stream(token_view_stream &&other) noexcept
+        constexpr token_view_stream(token_view_stream &&other) noexcept
             : current_iterator(std::move(other.current_iterator)),
               should_stop(std::move(other.should_stop)), on_destruct(std::move(other.on_destruct)),
               error(std::move(other.error)) {
             other.discard();
         }
 
-        token_view_stream &operator=(token_view_stream &&other) noexcept {
+        constexpr token_view_stream &operator=(token_view_stream &&other) noexcept {
             auto cpy = std::move(*this);
 
             current_iterator = std::move(other.current_iterator);
@@ -101,12 +101,12 @@ namespace ywl::misc::syn {
             return *this;
         }
 
-        constexpr bool is_finished() const {
+        [[nodiscard]] constexpr bool is_finished() const {
             return should_stop(current_iterator);
         }
 
         template<char c>
-        bool parse_char_token() {
+        constexpr bool parse_char_token() {
             if (is_finished()) {
                 return false;
             }
@@ -119,7 +119,7 @@ namespace ywl::misc::syn {
         }
 
         template<basic::string_literal str>
-        bool parse_literal_token() {
+        constexpr bool parse_literal_token() {
             if (is_finished()) {
                 return false;
             }
@@ -139,7 +139,7 @@ namespace ywl::misc::syn {
         }
 
         template<is_token_type T>
-        auto parse_by() -> typename T::result_type {
+        constexpr auto parse_by() -> typename T::result_type {
             if (is_finished()) {
                 return {};
             }
@@ -148,7 +148,7 @@ namespace ywl::misc::syn {
             return result;
         }
 
-        ~token_view_stream() noexcept(false) {
+        constexpr ~token_view_stream() noexcept(false) {
             if (!is_finished())
                 throw basic::runtime_error(
                     "Token view stream not finished, this can be avoided by explicitly calling discard");
@@ -158,7 +158,7 @@ namespace ywl::misc::syn {
             }
         }
 
-        void discard() {
+        constexpr void discard() {
             should_stop = {
                 current_iterator,
                 [](const_iter_type) { return true; }
@@ -167,16 +167,16 @@ namespace ywl::misc::syn {
             error = std::nullopt;
         }
 
-        void reset() {
+        constexpr void reset() {
             auto cpy = std::move(*this);
         }
 
-        [[nodiscard]] std::optional<error_type> get_error() const {
+        [[nodiscard]] constexpr std::optional<error_type> get_error() const {
             return error;
         }
 
         template<char front_paren, char back_paren>
-        std::optional<token_view_stream> sub_stream() {
+        constexpr std::optional<token_view_stream> sub_stream() {
             if (is_finished()) {
                 return {};
             }
@@ -307,7 +307,6 @@ namespace ywl::misc::syn {
         export template<std::floating_point T>
         class floating_point {
         public:
-            // using result_type = std::expected<T, error_type>;
             using result_type = ywl::basic::result<T, error_type>;
 
             constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
@@ -358,7 +357,9 @@ namespace ywl::misc::syn {
 
                             begin = consume_white_space(begin, fn);
                             if (fn(begin)) {
-                                return {begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)};
+                                return {
+                                    begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)
+                                };
                             }
                             auto [res_it, res]
                                     = integer<int>::parse(begin, fn); // using int for exponent, as it is usually small
@@ -366,7 +367,9 @@ namespace ywl::misc::syn {
                                 exponent = res.get_result();
                                 begin = res_it;
                             } else {
-                                return {begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)};
+                                return {
+                                    begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)
+                                };
                             }
                         } else {
                             return {begin, ywl::basic::make_error<error_type>(error_type::floating_point_format_error)};
@@ -406,7 +409,7 @@ namespace ywl::misc::syn {
             // using result_type = std::expected<std::string, error_type>;
             using result_type = ywl::basic::result<std::string, error_type>;
 
-            static std::pair<const_iter_type, std::optional<char>> handle_escape_sequence(
+            constexpr static std::pair<const_iter_type, std::optional<char>> handle_escape_sequence(
                 const_iter_type begin, const should_stop_type &fn) {
                 if (fn(begin)) {
                     return {begin, std::nullopt};
@@ -448,14 +451,19 @@ namespace ywl::misc::syn {
                     if (*begin == '\\') {
                         ++begin;
                         if (fn(begin)) {
-                            return {original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)};
+                            return {
+                                original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)
+                            };
                         }
                         auto pair = handle_escape_sequence(begin, fn);
                         if (pair.second.has_value()) {
                             ss << *pair.second;
                             begin = pair.first;
                         } else {
-                            return {original_begin, ywl::basic::make_error<error_type>(error_type::string_invalid_escape_error)};
+                            return {
+                                original_begin,
+                                ywl::basic::make_error<error_type>(error_type::string_invalid_escape_error)
+                            };
                         }
                     } else {
                         ss << *begin;
@@ -492,7 +500,7 @@ namespace ywl::misc::syn {
 
                 size_t length = begin - original_begin;
                 if (length != 4 && length != 5) {
-                    return {original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)};
+                    return {original_begin, {}};
                 }
 
                 constexpr auto true_str = "true";
@@ -503,7 +511,7 @@ namespace ywl::misc::syn {
                 if (length == 5 && std::equal(original_begin, begin, false_str, false_str + 5)) {
                     return {begin, ywl::basic::make_result<bool>(false)};
                 }
-                return {original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)};
+                return {original_begin, {}};
             }
         };
     }
