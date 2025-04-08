@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.misc.rust;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 import ywl.basic.helpers;
 
 namespace ywl::misc::rust {

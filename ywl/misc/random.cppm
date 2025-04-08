@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.misc.random;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 
 namespace ywl::misc {
     namespace ns_random::impl {

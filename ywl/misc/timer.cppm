@@ -1,8 +1,12 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.misc.timer;
 
 import ywl.overloads.std_overloads;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 
 namespace ywl::misc {
     export template<typename clock_type = std::chrono::high_resolution_clock,

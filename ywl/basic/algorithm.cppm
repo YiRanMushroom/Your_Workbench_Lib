@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.basic.algorithm;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 import ywl.basic.helpers;
 import ywl.basic.exceptions;
 

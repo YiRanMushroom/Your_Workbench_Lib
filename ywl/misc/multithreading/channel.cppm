@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.misc.multithreading.channel;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 import ywl.misc.multithreading.thread_safe_queue;
 import ywl.basic.exceptions;
 

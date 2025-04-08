@@ -1,7 +1,11 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.utils.logger;
 
 import ywl.basic.string_literal;
-import ywl.std.prelude;
+// import ywl.std.prelude;
 
 namespace ywl::utils {
     export class logger {

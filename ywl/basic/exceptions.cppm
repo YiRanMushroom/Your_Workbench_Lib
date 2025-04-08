@@ -1,5 +1,7 @@
 module;
 
+#include <stdc++pch.hpp>
+
 #include <version>
 
 #ifdef _WIN32
@@ -11,7 +13,6 @@ module;
 
 export module ywl.basic.exceptions;
 
-import ywl.std.prelude;
 import ywl.basic.string_literal;
 
 namespace ywl::basic {

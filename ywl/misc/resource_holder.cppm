@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.misc.resource_holder;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 import ywl.basic.exceptions;
 import ywl.basic.helpers;
 

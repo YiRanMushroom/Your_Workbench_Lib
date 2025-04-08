@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.misc.multithreading.thread_safe_queue;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 import ywl.basic.exceptions;
 
 namespace ywl::misc::multithreading {

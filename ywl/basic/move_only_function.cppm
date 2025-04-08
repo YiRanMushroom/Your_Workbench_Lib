@@ -1,6 +1,9 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.basic.move_only_function;
 
-import ywl.std.prelude;
 import ywl.basic.helpers;
 import ywl.basic.exceptions;
 

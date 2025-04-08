@@ -1,6 +1,8 @@
-export module ywl.basic.helpers;
+module;
 
-import ywl.std.prelude;
+#include <stdc++pch.hpp>
+
+export module ywl.basic.helpers;
 
 namespace ywl::basic {
     template<auto, typename>

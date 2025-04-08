@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.misc.multithreading.thread_pool;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 import ywl.basic.move_only_function;
 import ywl.utils.enum_entry;
 import ywl.misc.multithreading.channel;

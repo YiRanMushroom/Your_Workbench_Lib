@@ -1,5 +1,7 @@
 module;
 
+#include <stdc++pch.hpp>
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -10,7 +12,6 @@ module;
 
 export module ywl.app.vm;
 
-import ywl.std.prelude;
 import ywl.basic.exceptions;
 import ywl.utils.logger;
 

@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.misc.syn;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 import ywl.basic.string_literal;
 import ywl.basic.exceptions;
 import ywl.basic.result;

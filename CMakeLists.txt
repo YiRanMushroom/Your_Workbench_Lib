@@ -57,3 +57,18 @@ install(EXPORT ${PROJECT_NAME}Targets
 if(WIN32)
     target_link_libraries(your_workbench_lib PRIVATE DbgHelp)
 endif()
+
+target_precompile_headers(your_workbench_lib
+        PUBLIC
+        ywl/pch/stdc++pch.hpp
+)
+
+install(FILES ywl/pch/stdc++pch.hpp
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ywl/pch
+)
+
+target_include_directories(your_workbench_lib
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ywl/pch>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ywl/pch>
+)

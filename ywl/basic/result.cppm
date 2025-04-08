@@ -1,6 +1,9 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.basic.result;
 
-import ywl.std.prelude;
 import ywl.basic.exceptions;
 
 namespace ywl::basic {

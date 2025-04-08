@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.utils.enum_entry;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 
 namespace ywl::utils::enum_entry {
     export template<typename EnumType, EnumType enum_value, typename ValueType>

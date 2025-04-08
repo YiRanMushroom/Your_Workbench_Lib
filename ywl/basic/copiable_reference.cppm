@@ -1,10 +1,8 @@
 module;
 
-#include <cassert>
+#include <stdc++pch.hpp>
 
 export module ywl.basic.copiable_reference;
-
-import ywl.std.prelude;
 
 namespace ywl::basic {
     template<typename Base, typename Derived>

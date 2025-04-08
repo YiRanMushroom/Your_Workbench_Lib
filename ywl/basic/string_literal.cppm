@@ -1,6 +1,10 @@
+module;
+
+#include <stdc++pch.hpp>
+
 export module ywl.basic.string_literal;
 
-import ywl.std.prelude;
+// import ywl.std.prelude;
 
 namespace ywl::basic {
     export template<size_t N>
