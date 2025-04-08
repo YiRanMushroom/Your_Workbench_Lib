@@ -112,8 +112,6 @@ namespace ywl::basic {
         template<typename>
         friend class copiable_reference_base;
 
-
-
     public:
         copiable_reference_base(const copiable_reference_base &base) : m_data(base.clone_ptr()),
                                                                        m_t_to_void_offset(base.m_t_to_void_offset),
@@ -201,8 +199,8 @@ namespace ywl::basic {
     export template<typename T>
     class copiable_reference;
 
-    export template<typename T, typename... Args>
-    copiable_reference<T> make_reference(Args &&... args);
+    export template<typename Tp, typename... Args>
+    copiable_reference<Tp> make_reference(Args &&... args);
 
     template<typename T>
     class copiable_reference {
@@ -359,10 +357,10 @@ namespace ywl::basic {
         }
     };
 
-    template<typename T, typename... Args>
-    copiable_reference<T> make_reference(Args &&... args) {
-        return copiable_reference<T>{
-            copiable_reference_base<T>::create_reference(std::forward<Args>(args)...)
+    template<typename Tp, typename... Args>
+    copiable_reference<Tp> make_reference(Args &&... args) {
+        return copiable_reference<Tp>{
+            copiable_reference_base<Tp>::create_reference(std::forward<Args>(args)...)
         };
     }
 }
