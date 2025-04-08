@@ -236,7 +236,8 @@ namespace ywl::misc::syn {
                 auto original_begin = curr;
                 ++curr;
 
-                while (fn(curr) && (std::isalnum(*curr) || *curr == '_')) {
+                while (!fn(curr) &&
+                    (std::isalnum(*curr) || *curr == '_')) {
                     ++curr;
                 }
 
