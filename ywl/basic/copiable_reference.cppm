@@ -205,7 +205,7 @@ namespace ywl::basic {
 
         template<derived_from<T> Derived>
         constexpr copiable_reference_base<Derived> dyn_clone_as() const {
-            if (dynamic_cast<Derived *>(this->cast())) {
+            if (dynamic_cast<const Derived *>(this->cast())) {
                 return this->static_clone_as<Derived>();
             }
             return {};
