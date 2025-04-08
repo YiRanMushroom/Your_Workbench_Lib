@@ -82,6 +82,18 @@ namespace ywl::basic {
             }
         }
 
+        template<derived_from<T> Derived>
+        [[nodiscard]] constexpr uintptr_t get_derived_to_void_offset() const {
+            if constexpr (std::is_same_v<Derived, T>) {
+                return m_t_to_void_offset;
+            } else {
+                const T *data = this->cast();
+                const auto *derived = static_cast<const Derived *>(data);
+                uintptr_t offset = reinterpret_cast<uintptr_t>(derived) - reinterpret_cast<uintptr_t>(data);
+                return offset + m_t_to_void_offset;
+            }
+        }
+
     public:
         constexpr pointer_type cast() {
             T *data = reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(m_data) + m_t_to_void_offset);
@@ -167,6 +179,44 @@ namespace ywl::basic {
               m_copy_constructor(std::exchange(base.m_copy_constructor, nullptr)),
               m_deleter(std::exchange(base.m_deleter, nullptr)) {
             base.m_t_to_void_offset = 0;
+        }
+
+        template<derived_from<T> Derived>
+        constexpr copiable_reference_base<Derived> static_clone_as() const {
+            return {
+                this->clone_ptr(),
+                this->get_derived_to_void_offset<Derived>(),
+                this->m_copy_constructor,
+                this->m_deleter
+            };
+        }
+
+        template<derived_from<T> Derived>
+        constexpr copiable_reference_base<Derived> static_take_as() {
+            uintptr_t offset = this->get_derived_to_void_offset<Derived>();
+            this->m_t_to_void_offset = 0;
+            return {
+                std::exchange(this->m_data, nullptr),
+                offset,
+                std::exchange(this->m_copy_constructor, nullptr),
+                std::exchange(this->m_deleter, nullptr)
+            };
+        }
+
+        template<derived_from<T> Derived>
+        constexpr copiable_reference_base<Derived> dyn_clone_as() const {
+            if (dynamic_cast<Derived *>(this->cast())) {
+                return this->static_clone_as<Derived>();
+            }
+            return {};
+        }
+
+        template<derived_from<T> Derived>
+        constexpr copiable_reference_base<Derived> dyn_take_as() {
+            if (dynamic_cast<Derived *>(this->cast())) {
+                return this->static_take_as<Derived>();
+            }
+            return {};
         }
 
         template<derived_from<T> Derived>
@@ -338,7 +388,7 @@ namespace ywl::basic {
     public:
         // dynamic cast
         template<derived_from<T> Derived>
-        constexpr Derived *as_dyn() {
+        constexpr Derived *dyn_as() {
             if constexpr (std::is_same_v<Derived, T>) {
                 return m_base.cast();
             } else {
@@ -347,12 +397,59 @@ namespace ywl::basic {
         }
 
         template<derived_from<T> Derived>
-        constexpr const Derived *as_dyn() const {
+        constexpr const Derived *dyn_as() const {
             if constexpr (std::is_same_v<Derived, T>) {
                 return m_base.cast();
             } else {
                 return dynamic_cast<Derived *>(m_base.cast());
             }
+        }
+
+        template<derived_from<T> Derived>
+        constexpr Derived *static_as() {
+            if constexpr (std::is_same_v<Derived, T>) {
+                return m_base.cast();
+            } else {
+                return static_cast<Derived *>(m_base.cast());
+            }
+        }
+
+        template<derived_from<T> Derived>
+        constexpr const Derived *static_as() const {
+            if constexpr (std::is_same_v<Derived, T>) {
+                return m_base.cast();
+            } else {
+                return static_cast<Derived *>(m_base.cast());
+            }
+        }
+
+        // static clone, take
+        template<derived_from<T> Derived>
+        constexpr copiable_reference<Derived> static_clone_as() const {
+            return copiable_reference<Derived>{
+                m_base.template static_clone_as<Derived>()
+            };
+        }
+
+        template<derived_from<T> Derived>
+        constexpr copiable_reference<Derived> static_take_as() {
+            return copiable_reference<Derived>{
+                m_base.template static_take_as<Derived>()
+            };
+        }
+
+        template<derived_from<T> Derived>
+        constexpr copiable_reference<Derived> dyn_clone_as() const {
+            return copiable_reference<Derived>{
+                m_base.template dyn_clone_as<Derived>()
+            };
+        }
+
+        template<derived_from<T> Derived>
+        constexpr copiable_reference<Derived> dyn_take_as() {
+            return copiable_reference<Derived>{
+                m_base.template dyn_take_as<Derived>()
+            };
         }
     };
 
