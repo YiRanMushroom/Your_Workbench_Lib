@@ -113,11 +113,10 @@ namespace ywl::basic {
         }
 
     public:
-        copiable_reference_base(const copiable_reference_base &base) :
-            m_data(base.clone_ptr()),
-            m_t_to_void_offset(base.m_t_to_void_offset),
-            m_copy_constructor(base.m_copy_constructor),
-            m_deleter(base.m_deleter) {
+        copiable_reference_base(const copiable_reference_base &base) : m_data(base.clone_ptr()),
+                                                                       m_t_to_void_offset(base.m_t_to_void_offset),
+                                                                       m_copy_constructor(base.m_copy_constructor),
+                                                                       m_deleter(base.m_deleter) {
             // std::cout << "copiable_reference_base copy constructor" << std::endl;
         }
 
@@ -206,6 +205,12 @@ namespace ywl::basic {
     };
 
     export template<typename T>
+    class copiable_reference;
+
+    export template<typename T, typename... Args>
+    copiable_reference<T> make_reference(Args &&... args);
+
+    template<typename T>
     class copiable_reference {
     public:
         using value_type = T;
@@ -224,14 +229,15 @@ namespace ywl::basic {
 
         copiable_reference() = default;
 
-    public:
+    private:
         template<typename Tp, typename... Args>
         friend copiable_reference<Tp> make_reference(Args &&... args);
 
-        copiable_reference(copiable_reference_base<T> &&base) noexcept
+        explicit copiable_reference(copiable_reference_base<T> &&base) noexcept
             : m_base(std::move(base)) {
         }
 
+    public:
         copiable_reference clone(this const copiable_reference &self) {
             return self;
         }
@@ -359,7 +365,7 @@ namespace ywl::basic {
         }
     };
 
-    export template<typename T, typename... Args>
+    template<typename T, typename... Args>
     copiable_reference<T> make_reference(Args &&... args) {
         return copiable_reference<T>{
             copiable_reference_base<T>::create_reference(std::forward<Args>(args)...)
