@@ -33,9 +33,9 @@ namespace ywl::basic {
         deleter_type m_deleter{};
 
     public:
-        copiable_reference_base() = default;
+        constexpr copiable_reference_base() = default;
 
-        copiable_reference_base(
+        constexpr copiable_reference_base(
             void *data,
             uintptr_t t_to_void_offset,
             copy_constructor_type copy_constructor,
@@ -47,7 +47,7 @@ namespace ywl::basic {
         }
 
         template<typename... Args>
-        static copiable_reference_base create_reference(Args &&... args) {
+        constexpr static copiable_reference_base create_reference(Args &&... args) {
             auto data = static_cast<void *>(new T{std::forward<Args>(args)...});
             struct copy_constructor {
                 static void * copy(void *ptr) {
@@ -71,11 +71,11 @@ namespace ywl::basic {
 
     private:
         template<base_of<T> Base>
-        [[nodiscard]] uintptr_t get_base_to_void_offset() const {
+        [[nodiscard]] constexpr uintptr_t get_base_to_void_offset() const {
             if constexpr (std::is_same_v<Base, T>) {
                 return m_t_to_void_offset;
             } else {
-                const T* data = this->cast();
+                const T *data = this->cast();
                 const Base *base = static_cast<const Base *>(data);
                 uintptr_t offset = reinterpret_cast<uintptr_t>(base) - reinterpret_cast<uintptr_t>(data);
                 return offset + m_t_to_void_offset;
@@ -83,18 +83,17 @@ namespace ywl::basic {
         }
 
     public:
-
-        pointer_type cast() {
+        constexpr pointer_type cast() {
             T *data = reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(m_data) + m_t_to_void_offset);
             return data;
         }
 
-        const_pointer_type cast() const {
+        constexpr const_pointer_type cast() const {
             const T *data = reinterpret_cast<const T *>(reinterpret_cast<uintptr_t>(m_data) + m_t_to_void_offset);
             return data;
         }
 
-        void reset() {
+        constexpr void reset() {
             if (m_data) {
                 assert(m_copy_constructor && m_deleter);
                 m_deleter(m_data);
@@ -104,7 +103,7 @@ namespace ywl::basic {
             }
         }
 
-        [[nodiscard]] void *clone_ptr() const {
+        [[nodiscard]] constexpr void *clone_ptr() const {
             return m_copy_constructor(m_data);
         }
 
@@ -113,13 +112,13 @@ namespace ywl::basic {
         friend class copiable_reference_base;
 
     public:
-        copiable_reference_base(const copiable_reference_base &base) : m_data(base.clone_ptr()),
-                                                                       m_t_to_void_offset(base.m_t_to_void_offset),
-                                                                       m_copy_constructor(base.m_copy_constructor),
-                                                                       m_deleter(base.m_deleter) {
+        constexpr copiable_reference_base(const copiable_reference_base &base) : m_data(base.clone_ptr()),
+            m_t_to_void_offset(base.m_t_to_void_offset),
+            m_copy_constructor(base.m_copy_constructor),
+            m_deleter(base.m_deleter) {
         }
 
-        copiable_reference_base(copiable_reference_base &&base) noexcept
+        constexpr copiable_reference_base(copiable_reference_base &&base) noexcept
             : m_data(std::exchange(base.m_data, nullptr)),
               m_t_to_void_offset(
                   std::exchange(
@@ -131,7 +130,7 @@ namespace ywl::basic {
                   base.m_deleter, nullptr)) {
         }
 
-        copiable_reference_base &operator=(const copiable_reference_base &base) {
+        constexpr copiable_reference_base &operator=(const copiable_reference_base &base) {
             if (this != &base) {
                 reset();
                 m_data = base.clone_ptr();
@@ -142,7 +141,7 @@ namespace ywl::basic {
             return *this;
         }
 
-        copiable_reference_base &operator=(copiable_reference_base &&base) noexcept {
+        constexpr copiable_reference_base &operator=(copiable_reference_base &&base) noexcept {
             if (this != &base) {
                 reset();
                 m_data = std::exchange(base.m_data, nullptr);
@@ -154,7 +153,7 @@ namespace ywl::basic {
         }
 
         template<derived_from<T> Derived>
-        copiable_reference_base(const copiable_reference_base<Derived> &base)
+        constexpr copiable_reference_base(const copiable_reference_base<Derived> &base)
             : m_data(base.clone_ptr()),
               m_t_to_void_offset(base.template get_base_to_void_offset<T>()),
               m_copy_constructor(base.m_copy_constructor),
@@ -162,7 +161,7 @@ namespace ywl::basic {
         }
 
         template<derived_from<T> Derived>
-        copiable_reference_base(copiable_reference_base<Derived> &&base) noexcept
+        constexpr copiable_reference_base(copiable_reference_base<Derived> &&base) noexcept
             : m_data(std::exchange(base.m_data, nullptr)),
               m_t_to_void_offset(base.template get_base_to_void_offset<T>()),
               m_copy_constructor(std::exchange(base.m_copy_constructor, nullptr)),
@@ -171,7 +170,7 @@ namespace ywl::basic {
         }
 
         template<derived_from<T> Derived>
-        copiable_reference_base &operator=(const copiable_reference_base<Derived> &base) {
+        constexpr copiable_reference_base &operator=(const copiable_reference_base<Derived> &base) {
             if (this != &base) {
                 reset();
                 m_data = base.clone_ptr();
@@ -183,7 +182,7 @@ namespace ywl::basic {
         }
 
         template<derived_from<T> Derived>
-        copiable_reference_base &operator=(copiable_reference_base<Derived> &&base) noexcept {
+        constexpr copiable_reference_base &operator=(copiable_reference_base<Derived> &&base) noexcept {
             if (this != &base) {
                 reset();
                 m_data = std::exchange(base.m_data, nullptr);
@@ -200,7 +199,7 @@ namespace ywl::basic {
     class copiable_reference;
 
     export template<typename Tp, typename... Args>
-    copiable_reference<Tp> make_reference(Args &&... args);
+    constexpr copiable_reference<Tp> make_reference(Args &&... args);
 
     template<typename T>
     class copiable_reference {
@@ -215,79 +214,79 @@ namespace ywl::basic {
         copiable_reference_base<T> m_base;
 
     public:
-        void reset() {
+        constexpr void reset() {
             m_base.reset();
         }
 
-        copiable_reference() = default;
+        constexpr copiable_reference() = default;
 
-    private:
-        template<typename Tp, typename... Args>
-        friend copiable_reference<Tp> make_reference(Args &&... args);
+        // private:
+        // template<typename Tp, typename... Args>
+        // friend constexpr copiable_reference<Tp> make_reference(Args &&... args);
 
-        explicit copiable_reference(copiable_reference_base<T> &&base) noexcept
+        constexpr explicit copiable_reference(copiable_reference_base<T> &&base) noexcept
             : m_base(std::move(base)) {
         }
 
     public:
-        copiable_reference clone(this const copiable_reference &self) {
+        constexpr copiable_reference clone(this const copiable_reference &self) {
             return self;
         }
 
-        copiable_reference take(this copiable_reference &self) {
+        constexpr copiable_reference take(this copiable_reference &self) {
             return std::move(self);
         }
 
         template<base_of<T> Base = T>
-        Base &as_ref() {
+        constexpr Base &as_ref() {
             return *static_cast<Base *>(m_base.cast());
         }
 
         template<base_of<T> Base = T>
-        const Base &as_ref() const {
+        constexpr const Base &as_ref() const {
             return *static_cast<const Base *>(m_base.cast());
         }
 
-        T *get() {
+        constexpr T *get() {
             return m_base.cast();
         }
 
-        T *get() const {
+        constexpr T *get() const {
             return m_base.cast();
         }
 
-        T &operator*() {
+        constexpr T &operator*() {
             return *m_base.cast();
         }
 
-        const T &operator*() const {
+        constexpr const T &operator*() const {
             return *m_base.cast();
         }
 
-        T *operator->() {
+        constexpr T *operator->() {
             return m_base.cast();
         }
 
-        const T *operator->() const {
+        constexpr const T *operator->() const {
             return m_base.cast();
         }
 
-        copiable_reference(const copiable_reference &other) noexcept
+        constexpr copiable_reference(const copiable_reference &other) noexcept
             : m_base(other.m_base) {
         }
 
-        copiable_reference(copiable_reference &&other) noexcept
+        constexpr copiable_reference(copiable_reference &&other) noexcept
             : m_base(std::move(other.m_base)) {
         }
 
-        copiable_reference &operator=(const copiable_reference &other) {
+        constexpr copiable_reference &operator=(const copiable_reference &other) {
             if (this != &other) {
                 m_base = other.m_base;
             }
             return *this;
         }
 
-        copiable_reference &operator=(copiable_reference &&other) noexcept {
+        constexpr copiable_reference &operator=(copiable_reference &&other) noexcept {
             if (this != &other) {
                 m_base = std::move(other.m_base);
             }
@@ -295,7 +294,7 @@ namespace ywl::basic {
         }
 
     public:
-        ~copiable_reference() {
+        constexpr ~copiable_reference() {
             reset();
         }
 
@@ -304,7 +303,7 @@ namespace ywl::basic {
 
         // move constructor, which also receives any derived class
         template<derived_from<T> Derived>
-        copiable_reference(copiable_reference<Derived> &&other) : // NOLINT
+        constexpr copiable_reference(copiable_reference<Derived> &&other) : // NOLINT
             m_base{
                 std::move(other.m_base)
             } {
@@ -312,7 +311,7 @@ namespace ywl::basic {
 
         // copy constructor, which also receives any derived class
         template<derived_from<T> Derived>
-        copiable_reference(const copiable_reference<Derived> &other) noexcept : // NOLINT
+        constexpr copiable_reference(const copiable_reference<Derived> &other) noexcept : // NOLINT
             m_base{
                 other.m_base
             } {
@@ -320,7 +319,7 @@ namespace ywl::basic {
 
         // move assignment operator, which also receives any derived class
         template<derived_from<T> Derived>
-        copiable_reference &operator=(copiable_reference<Derived> &&other) noexcept {
+        constexpr copiable_reference &operator=(copiable_reference<Derived> &&other) noexcept {
             if (this != &other) {
                 this->m_base = std::move(other.m_base);
             }
@@ -329,7 +328,7 @@ namespace ywl::basic {
 
         // copy assignment operator, which also receives any derived class
         template<derived_from<T> Derived>
-        copiable_reference &operator=(const copiable_reference<Derived> &other) noexcept {
+        constexpr copiable_reference &operator=(const copiable_reference<Derived> &other) noexcept {
             if (this != &other) {
                 this->m_base = other.m_base;
             }
@@ -339,7 +338,7 @@ namespace ywl::basic {
     public:
         // dynamic cast
         template<derived_from<T> Derived>
-        Derived *as_dyn() {
+        constexpr Derived *as_dyn() {
             if constexpr (std::is_same_v<Derived, T>) {
                 return m_base.cast();
             } else {
@@ -348,7 +347,7 @@ namespace ywl::basic {
         }
 
         template<derived_from<T> Derived>
-        const Derived *as_dyn() const {
+        constexpr const Derived *as_dyn() const {
             if constexpr (std::is_same_v<Derived, T>) {
                 return m_base.cast();
             } else {
@@ -358,7 +357,7 @@ namespace ywl::basic {
     };
 
     template<typename Tp, typename... Args>
-    copiable_reference<Tp> make_reference(Args &&... args) {
+    constexpr copiable_reference<Tp> make_reference(Args &&... args) {
         return copiable_reference<Tp>{
             copiable_reference_base<Tp>::create_reference(std::forward<Args>(args)...)
         };
