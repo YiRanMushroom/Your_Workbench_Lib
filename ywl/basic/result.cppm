@@ -159,16 +159,42 @@ namespace ywl::basic {
 
         constexpr result_type get_result() && {
             if (is_some()) {
-                auto data = std::exchange(m_data, std::nullopt);
-                return std::move(std::get<result_type>(*data));
+                return std::move(std::get<result_type>(*m_data));
             }
             throw runtime_error("Result is not some");
         }
 
         constexpr const result_type &&get_result() const && {
             if (is_some()) {
-                auto data = std::exchange(m_data, std::nullopt);
-                return std::move(std::get<result_type>(*data));
+                return std::move(std::get<result_type>(*m_data));
+            }
+            throw runtime_error("Result is not some");
+        }
+
+        constexpr result_type& unwrap() & {
+            if (is_some()) {
+                return std::get<result_type>(*m_data);
+            }
+            throw runtime_error("Result is not some");
+        }
+
+        constexpr const result_type& unwrap() const & {
+            if (is_some()) {
+                return std::get<result_type>(*m_data);
+            }
+            throw runtime_error("Result is not some");
+        }
+
+        constexpr result_type&& unwrap() && {
+            if (is_some()) {
+                return std::move(std::get<result_type>(*m_data));
+            }
+            throw runtime_error("Result is not some");
+        }
+
+        constexpr const result_type&& unwrap() const && {
+            if (is_some()) {
+                return std::move(std::get<result_type>(*m_data));
             }
             throw runtime_error("Result is not some");
         }
@@ -196,6 +222,36 @@ namespace ywl::basic {
         }
 
         constexpr const error_type &&get_error() const && {
+            if (is_error()) {
+                auto data = std::exchange(m_data, std::nullopt);
+                return std::move(std::get<error_type>(*data));
+            }
+            throw runtime_error("Result is not error");
+        }
+
+        constexpr error_type &unwrap_error() & {
+            if (is_error()) {
+                return std::get<error_type>(*m_data);
+            }
+            throw runtime_error("Result is not error");
+        }
+
+        constexpr const error_type &unwrap_error() const & {
+            if (is_error()) {
+                return std::get<error_type>(*m_data);
+            }
+            throw runtime_error("Result is not error");
+        }
+
+        constexpr error_type unwrap_error() && {
+            if (is_error()) {
+                auto data = std::exchange(m_data, std::nullopt);
+                return std::move(std::get<error_type>(*data));
+            }
+            throw runtime_error("Result is not error");
+        }
+
+        constexpr const error_type &&unwrap_error() const && {
             if (is_error()) {
                 auto data = std::exchange(m_data, std::nullopt);
                 return std::move(std::get<error_type>(*data));
