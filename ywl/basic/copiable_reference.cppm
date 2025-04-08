@@ -81,6 +81,9 @@ namespace ywl::basic {
 
         void reset() {
             if (m_data) {
+                /*if (m_t_to_void_offset) {
+                    std::cout << "resetting with offset" << std::endl;
+                }*/
                 assert(m_copy_constructor && m_deleter);
                 m_deleter(m_data);
                 m_data = nullptr;
@@ -115,7 +118,7 @@ namespace ywl::basic {
             m_t_to_void_offset(base.m_t_to_void_offset),
             m_copy_constructor(base.m_copy_constructor),
             m_deleter(base.m_deleter) {
-            std::cout << "copiable_reference_base copy constructor" << std::endl;
+            // std::cout << "copiable_reference_base copy constructor" << std::endl;
         }
 
         copiable_reference_base(copiable_reference_base &&base) noexcept
@@ -128,11 +131,11 @@ namespace ywl::basic {
                       base.m_copy_constructor, nullptr)),
               m_deleter(std::exchange(
                   base.m_deleter, nullptr)) {
-            std::cout << "copiable_reference_base move constructor" << std::endl;
+            // std::cout << "copiable_reference_base move constructor" << std::endl;
         }
 
         copiable_reference_base &operator=(const copiable_reference_base &base) {
-            std::cout << "copiable_reference_base copy assignment" << std::endl;
+            // std::cout << "copiable_reference_base copy assignment" << std::endl;
             if (this != &base) {
                 reset();
                 m_data = base.clone_ptr();
@@ -144,7 +147,7 @@ namespace ywl::basic {
         }
 
         copiable_reference_base &operator=(copiable_reference_base &&base) noexcept {
-            std::cout << "copiable_reference_base move assignment" << std::endl;
+            // std::cout << "copiable_reference_base move assignment" << std::endl;
             if (this != &base) {
                 reset();
                 m_data = std::exchange(base.m_data, nullptr);
@@ -161,7 +164,7 @@ namespace ywl::basic {
               m_t_to_void_offset(get_derived_to_t_offset<Derived>() + base.m_t_to_void_offset),
               m_copy_constructor(base.m_copy_constructor),
               m_deleter(base.m_deleter) {
-            std::cout << "copiable_reference_base copy constructor" << std::endl;
+            // std::cout << "copiable_reference_base copy constructor" << std::endl;
         }
 
         template<derived_from<T> Derived>
@@ -171,12 +174,12 @@ namespace ywl::basic {
                                  + std::exchange(base.m_t_to_void_offset, 0)),
               m_copy_constructor(std::exchange(base.m_copy_constructor, nullptr)),
               m_deleter(std::exchange(base.m_deleter, nullptr)) {
-            std::cout << "copiable_reference_base move constructor" << std::endl;
+            // std::cout << "copiable_reference_base move constructor" << std::endl;
         }
 
         template<derived_from<T> Derived>
         copiable_reference_base &operator=(const copiable_reference_base<Derived> &base) {
-            std::cout << "copiable_reference_base copy assignment" << std::endl;
+            // std::cout << "copiable_reference_base copy assignment" << std::endl;
             if (this != &base) {
                 reset();
                 m_data = base.clone_ptr();
@@ -189,7 +192,7 @@ namespace ywl::basic {
 
         template<derived_from<T> Derived>
         copiable_reference_base &operator=(copiable_reference_base<Derived> &&base) noexcept {
-            std::cout << "copiable_reference_base move assignment" << std::endl;
+            // std::cout << "copiable_reference_base move assignment" << std::endl;
             if (this != &base) {
                 reset();
                 m_data = std::exchange(base.m_data, nullptr);
