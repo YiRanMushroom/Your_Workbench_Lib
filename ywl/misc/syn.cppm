@@ -149,9 +149,9 @@ namespace ywl::misc::syn {
         }
 
         ~token_view_stream() noexcept(false) {
-            if (!is_finished())
+            /*if (!is_finished())
                 throw basic::runtime_error(
-                    "Token view stream not finished, this can be avoided by explicitly calling discard");
+                    "Token view stream not finished, this can be avoided by explicitly calling discard");*/
 
             if (on_destruct) {
                 on_destruct(*this);
@@ -160,7 +160,7 @@ namespace ywl::misc::syn {
 
         void discard() {
             should_stop = {
-                current_iterator,
+                should_stop.end_it,
                 [](const_iter_type) { return true; }
             };
 
