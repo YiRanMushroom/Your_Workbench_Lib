@@ -41,8 +41,17 @@ export module ywl.msvc.std;
 
 #ifdef _MSC_VER
 
+#if __clang__
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
+
+#else
+
 #pragma warning(push)
-#pragma warning(disable : 5244) // '#include <meow>' in the purview of module 'std' appears erroneous.
+#pragma warning(disable : warning) // '#include <meow>' in the purview of module 'std' appears erroneous.
+
+#endif
 
 // "C++ library headers" [tab:headers.cpp]
 #include <algorithm>
@@ -166,6 +175,10 @@ export module ywl.msvc.std;
 #include <cwchar>
 #include <cwctype>
 
+#if __clang__
+#pragma clang diagnostic pop
+#else
 #pragma warning(pop)
+#endif
 
 #endif
