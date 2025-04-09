@@ -7,7 +7,7 @@ project(your_workbench_lib
         DESCRIPTION "modular C++ utility library"
         LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE MODULES "ywl/*.cppm" "ywl/*.ixx")
