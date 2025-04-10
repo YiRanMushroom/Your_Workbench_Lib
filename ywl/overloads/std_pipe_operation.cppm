@@ -15,11 +15,11 @@ namespace ywl::overloads {
 
         constexpr pipe_flag_t(const pipe_flag_t &) = delete;
 
-        constexpr pipe_flag_t(pipe_flag_t &&) = delete;
+        constexpr pipe_flag_t(pipe_flag_t &&) = default;
 
         constexpr pipe_flag_t &operator=(const pipe_flag_t &) = delete;
 
-        constexpr pipe_flag_t &operator=(pipe_flag_t &&) = delete;
+        constexpr pipe_flag_t &operator=(pipe_flag_t &&) = default;
     };
 
     template<auto fn, typename... Args>
@@ -34,7 +34,8 @@ namespace ywl::overloads {
 
         constexpr decltype(auto)
         operator()(auto &&target) requires std::is_invocable_v<decltype(fn), decltype(target), Args...> {
-            return std::apply(fn, std::tuple_cat(std::forward_as_tuple(std::forward<decltype(target)>(target)), args));
+            return std::apply(fn, std::tuple_cat(std::forward_as_tuple(std::forward<decltype(target)>(target)),
+                                                 std::move(args)));
         }
     };
 
