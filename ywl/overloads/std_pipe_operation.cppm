@@ -289,7 +289,7 @@ namespace ywl::overloads {
             }
         };
 
-        export template<ywl::basic::string_literal sl>
+        export template<ywl::basic::string_literal sl = "{}">
         constexpr auto to_formatted_string() {
             return constexpr_pipe<to_formatted_string_impl_t<sl>{}>();
         }
