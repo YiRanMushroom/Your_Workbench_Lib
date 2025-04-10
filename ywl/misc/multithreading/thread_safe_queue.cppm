@@ -8,6 +8,21 @@ export module ywl.misc.multithreading.thread_safe_queue;
 import ywl.basic.exceptions;
 
 namespace ywl::misc::multithreading {
+    template<typename>
+    struct queue_top_el {
+        static_assert(false, "queue_pop_el is not implemented for this type");
+    };
+
+    template<typename V> requires requires { std::declval<V>().front(); }
+    struct queue_top_el<V> {
+        using type = std::remove_reference_t<decltype(std::declval<V>().front())>;
+    };
+
+    template<typename V> requires requires { std::declval<V>().top(); }
+    struct queue_top_el<V> {
+        using type = std::remove_reference_t<decltype(std::declval<V>().top())>;
+    };
+
     export template<typename Queue_Type>
     concept is_queue = requires(Queue_Type queue) {
         typename Queue_Type::value_type;
@@ -16,19 +31,10 @@ namespace ywl::misc::multithreading {
         { queue.pop() } -> std::same_as<void>;
         { queue.size() } -> std::same_as<size_t>;
         { queue.empty() } -> std::same_as<bool>;
-
-        [] -> bool {
-            if constexpr (requires {{ queue.front() } -> std::same_as<typename Queue_Type::value_type>; }) {
-                return true;
-            } else if constexpr (requires {{ queue.top() } -> std::same_as<typename Queue_Type::value_type>; }) {
-                return true;
-            }
-            return false;
-        }() == true;
-    };
+    } && std::is_same_v<typename Queue_Type::value_type,
+        typename queue_top_el<Queue_Type>::type>;
 
     export template<is_queue Queue_Type>
-// this should support queue and priority_queue
     class thread_safe_queue {
     public:
         using queue_type = Queue_Type;
@@ -54,7 +60,7 @@ namespace ywl::misc::multithreading {
             m_queue.emplace(std::forward<decltype(args)>(args)...);
         }
 
-        constexpr std::optional <value_type> pop() {
+        constexpr std::optional<value_type> pop() {
             std::scoped_lock lock{m_mutex};
             if (m_queue.empty()) {
                 return std::nullopt;
@@ -67,8 +73,9 @@ namespace ywl::misc::multithreading {
                     return std::move(m_queue.front());
                 } else {
                     throw ywl::basic::ywl_impl_error{
-                            "Implementation error in ywl::miscellaneous::multithreading::thread_safe_queue, "
-                            "this should never reach."};
+                        "Implementation error in ywl::miscellaneous::multithreading::thread_safe_queue, "
+                        "this should never reach."
+                    };
                 }
             }();
 
