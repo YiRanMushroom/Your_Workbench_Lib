@@ -61,7 +61,7 @@ namespace ywl::misc {
         constexpr static T read_from(std::vector<unsigned char> &container) {
             // read_from_back
             assert(container.size() >= sizeof(T));
-            T val{val};
+            T val;
             // std::memcpy(&val, container.data() + container.size() - sizeof(T), sizeof(T));
             std::copy_n(container.data() + container.size() - sizeof(T), sizeof(T),
                         reinterpret_cast<unsigned char *>(&val));

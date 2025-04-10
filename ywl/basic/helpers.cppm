@@ -110,13 +110,18 @@ namespace ywl::basic {
     export template<auto constant, typename T>
     using constant_with_variable = constant_with_variable_t<decltype(constant), constant, T>;
 
-    export template<typename CheckType, typename TupleType>
-    constexpr bool type_in_tuple_v = [] -> bool {
+    template<typename CheckType, typename TupleType>
+    struct type_in_tuple {
         static_assert(false, "Type template parameter is not a tuple type");
-    }();
+    };
 
-    export template<typename CheckType, typename... Types>
-    constexpr bool type_in_tuple_v<CheckType, std::tuple<Types...> > = (std::same_as<CheckType, Types> || ...);
+    template<typename CheckType, typename... Types>
+    struct type_in_tuple<CheckType, std::tuple<Types...>> {
+        static constexpr bool value = (std::same_as<CheckType, Types> || ...);
+    };
+
+    export template<typename CheckType, typename TupleType>
+    constexpr bool type_in_tuple_v = type_in_tuple<CheckType, TupleType>::value;
 
     template<typename... Types>
     struct unique_tuple_impl;

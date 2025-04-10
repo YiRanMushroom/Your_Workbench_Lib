@@ -234,7 +234,7 @@ namespace ywl::misc::syn {
             constexpr static parse_result_type<result_type> parse(const_iter_type begin, const should_stop_type &fn) {
                 auto curr = begin;
 
-                if (fn(curr) || !std::isalpha(*curr) && *curr != '_') {
+                if (fn(curr) || (!std::isalpha(*curr) && *curr != '_')) {
                     return {begin, {}};
                 }
                 auto original_begin = curr;
@@ -500,7 +500,7 @@ namespace ywl::misc::syn {
                     ++begin;
                 }
 
-                size_t length = begin - original_begin;
+                ptrdiff_t length = begin - original_begin;
                 if (length != 4 && length != 5) {
                     return {original_begin, ywl::basic::make_error<error_type>(error_type::string_format_error)};
                 }
