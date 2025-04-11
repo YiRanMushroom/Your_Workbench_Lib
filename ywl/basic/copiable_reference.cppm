@@ -46,7 +46,7 @@ namespace ywl::basic {
 
         template<typename... Args>
         constexpr static copiable_reference_base create_reference(Args &&... args) {
-            auto data = static_cast<void *>(new T{std::forward<Args>(args)...});
+            auto data = static_cast<void *>(new T(std::forward<Args>(args)...));
             struct copy_constructor {
                 static void * copy(void *ptr) {
                     return new T{*static_cast<T *>(ptr)};

@@ -25,8 +25,7 @@ namespace ywl::utils::enum_entry {
         constexpr enum_entry() = default;
     };
 
-    export struct variant_pipe_flag_t {
-    };
+    export struct variant_pipe_flag_t {};
 
     export template<typename>
     constexpr bool is_variant_of_enum_entries_v = false;

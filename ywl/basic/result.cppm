@@ -39,7 +39,7 @@ namespace ywl::basic {
 
     export template<typename T>
     constexpr auto make_result(auto &&... args) {
-        return result_of_t{T{std::forward<decltype(args)>(args)...}};
+        return result_of_t{T(std::forward<decltype(args)>(args)...)};
     }
 
     template<typename T>
@@ -74,7 +74,7 @@ namespace ywl::basic {
 
     export template<typename T>
     constexpr auto make_error(auto &&... args) {
-        return error_of_t{T{std::forward<decltype(args)>(args)...}};
+        return error_of_t{T(std::forward<decltype(args)>(args)...)};
     }
 
     export enum class result_state : uint8_t {
@@ -171,28 +171,28 @@ namespace ywl::basic {
             throw runtime_error("Result is not some");
         }
 
-        constexpr result_type& unwrap() & {
+        constexpr result_type &unwrap() & {
             if (is_some()) {
                 return std::get<result_type>(*m_data);
             }
             throw runtime_error("Result is not some");
         }
 
-        constexpr const result_type& unwrap() const & {
+        constexpr const result_type &unwrap() const & {
             if (is_some()) {
                 return std::get<result_type>(*m_data);
             }
             throw runtime_error("Result is not some");
         }
 
-        constexpr result_type&& unwrap() && {
+        constexpr result_type &&unwrap() && {
             if (is_some()) {
                 return std::move(std::get<result_type>(*m_data));
             }
             throw runtime_error("Result is not some");
         }
 
-        constexpr const result_type&& unwrap() const && {
+        constexpr const result_type &&unwrap() const && {
             if (is_some()) {
                 return std::move(std::get<result_type>(*m_data));
             }

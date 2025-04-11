@@ -13,7 +13,6 @@ namespace ywl::basic {
 
     template<typename Ret, typename... Args>
     class move_only_function_impl {
-
     public:
         constexpr move_only_function_impl() = default;
 
@@ -39,7 +38,7 @@ namespace ywl::basic {
         using base_type = move_only_function_base_t;
 
     private:
-        std::unique_ptr <base_type> m_base;
+        std::unique_ptr<base_type> m_base;
 
     public:
         constexpr operator bool() const {
@@ -74,7 +73,7 @@ namespace ywl::basic {
         friend class move_only_function<Ret(Args...)>;
 
     public:
-        constexpr move_only_function_impl(std::unique_ptr <base_type> base) : m_base(std::move(base)) {}
+        constexpr move_only_function_impl(std::unique_ptr<base_type> base) : m_base(std::move(base)) {}
 
         constexpr move_only_function_impl(std::nullptr_t) : m_base(nullptr) {}
 
@@ -128,16 +127,16 @@ namespace ywl::basic {
 
         template<ywl::basic::function_like<Ret(Args...)> F>
         constexpr move_only_function(F &&f) : impl_type{
-                std::make_unique < typename impl_type::template derive_base_t<std::remove_reference_t < F>>>(
+            std::make_unique<typename impl_type::template derive_base_t<std::remove_reference_t<F>>>(
                 std::forward<F>(f))
         } {}
     };
 
     export template<typename Ret, typename... Args>
-    move_only_function(Ret(*)(Args...)) -> move_only_function<Ret(Args...)>;
+    move_only_function(Ret (*)(Args...)) -> move_only_function<Ret(Args...)>;
 
     export template<typename T>
-    move_only_function(T) -> move_only_function<std::remove_pointer_t < decltype(+std::declval<T>())>>;
+    move_only_function(T) -> move_only_function<std::remove_pointer_t<decltype(+std::declval<T>())>>;
 
     export template<typename Ret, typename... Args>
     move_only_function(std::function<Ret(Args...)>) -> move_only_function<Ret(Args...)>;
